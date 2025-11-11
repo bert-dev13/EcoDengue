@@ -7,10 +7,10 @@ A web-based system that predicts the number of dengue cases in a community based
 - **Dengue Case Prediction**: Calculates predicted dengue cases using a regression formula based on:
   - % of Houses with Proper Waste Disposal
   - % of Houses Free of Stagnant Water
-  - Drainage Score
+  - Drainage Score (1-5)
   - Temperature (°C)
-  - Rainfall (mm)
-  - Community Clean-Up Score
+  - Rainfall (Number of Rainy Days)
+  - Community Clean-Up Drive (Frequency)
 
 - **AI-Powered Recommendations**: Uses Together API (DeepSeek model) to generate actionable recommendations for:
   - Waste management strategies
@@ -66,10 +66,10 @@ No. of Dengue Cases = 260.819 - 2.057(W) - 0.194(F) - 1.318(D) - 0.609(T) - 0.22
 Where:
 - **W** = % of Houses with Proper Waste Disposal
 - **F** = % of Houses Free of Stagnant Water
-- **D** = Drainage Score
+- **D** = Drainage Score (1-5)
 - **T** = Temperature (°C)
-- **R** = Rainfall (mm)
-- **U** = Community Clean-Up Score
+- **R** = Rainfall (Number of Rainy Days)
+- **U** = Community Clean-Up Drive Frequency
 
 ## API Endpoints
 
@@ -148,3 +148,5 @@ This project is developed for educational purposes.
 - Inspired by the TOCSEA project design
 
 
+git rm -r --cached .venv
+git commit -m "Remove .venv from tracking"

@@ -22,10 +22,10 @@ def get_ai_recommendations(waste_disposal, stagnant_water, drainage_score, tempe
     Args:
         waste_disposal (float): % of Houses with Proper Waste Disposal
         stagnant_water (float): % of Houses Free of Stagnant Water
-        drainage_score (float): Drainage Score
+        drainage_score (float): Drainage Score (1-5)
         temperature (float): Temperature (°C)
-        rainfall (float): Rainfall (mm)
-        cleanup_score (float): Community Clean-Up Score
+        rainfall (float): Rainfall (Number of Rainy Days)
+        cleanup_score (float): Community Clean-Up Drive Frequency
         dengue_cases (float): Predicted number of dengue cases
     
     Returns:
@@ -35,19 +35,22 @@ def get_ai_recommendations(waste_disposal, stagnant_water, drainage_score, tempe
 
 - % of Houses with Proper Waste Disposal: {waste_disposal}%
 - % of Houses Free of Stagnant Water: {stagnant_water}%
-- Drainage Score: {drainage_score}
+- Drainage Score (1-5): {drainage_score}
 - Temperature (°C): {temperature}
-- Rainfall (mm): {rainfall}
-- Community Clean-Up Score: {cleanup_score}
+- Rainfall (Number of Rainy Days): {rainfall}
+- Community Clean-Up Drive (Frequency): {cleanup_score}
 
 Provide ONLY actionable recommendations to reduce dengue incidence. 
 
 CRITICAL INSTRUCTIONS:
+- Do NOT analyze, describe, or explain the input values (e.g., "30% is low", "that's high", "which is good")
+- Do NOT state what the values mean or interpret them (e.g., "waste management is an issue", "standing water is a problem")
 - Do NOT include any reasoning, explanations, or meta-commentary
+- Do NOT include sentences like "even though the score is high", "maybe there's room for improvement", "which can lead to"
 - Do NOT include instructions to yourself like "I should avoid markdown" or "Each point should start with a verb"
 - Do NOT mention your thought process, how you're organizing, or what you're planning to do
-- Do NOT include phrases like "Let me go through each category" or "based on the factors and the thought process"
-- ONLY output the actual recommendations - nothing else
+- Do NOT include phrases like "Let me go through each category" or "based on the factors"
+- ONLY output actionable recommendations starting with action verbs - nothing else
 
 Include recommendations for:
 - Waste management strategies
@@ -57,12 +60,38 @@ Include recommendations for:
 - Preventive measures
 - Public awareness and education
 
-Format the recommendations as a clean list with bullet points:
-• First recommendation
-• Second recommendation
-• Third recommendation
+Format the recommendations with category headers followed by bullet points:
 
-Start each recommendation with an action verb (Implement, Organize, Conduct, etc.). Output ONLY the recommendations, no explanations or meta-commentary."""
+**Waste Management Strategies**
+• Implement [action]
+• Organize [action]
+
+**Vector Control Measures**
+• Conduct [action]
+• Implement [action]
+
+**Community Health Tips**
+• Advise [action]
+• Promote [action]
+
+**Environmental Interventions**
+• Improve [action]
+• Organize [action]
+
+**Preventive Measures**
+• Establish [action]
+• Distribute [action]
+
+**Public Awareness & Education**
+• Organize [action]
+• Conduct [action]
+
+OR if you prefer, format as a clean list with bullet points (they will be automatically categorized):
+• Implement [action]
+• Organize [action]
+• Conduct [action]
+
+Start each recommendation with an action verb (Implement, Organize, Conduct, Distribute, Establish, Promote, Advise, etc.). Output ONLY the recommendations, no analysis, no explanations, no descriptions of the input values."""
 
     try:
         response = client.chat.completions.create(
@@ -98,6 +127,21 @@ Start each recommendation with an action verb (Implement, Organize, Conduct, etc
             r'avoid\s+any\s+markdown',
             r'and\s+i\s+need\s+to',
             r'and\s+let\s+me',
+            # Patterns for analyzing/describing input values
+            r'\d+%\s+of\s+houses',
+            r'that\'?s\s+(low|high|good|bad|even\s+lower|even\s+higher)',
+            r'which\s+is\s+(good|bad|low|high|within|outside)',
+            r'which\s+can\s+lead\s+to',
+            r'even\s+though\s+the\s+score',
+            r'maybe\s+there\'?s\s+room',
+            r'could\s+further\s+reduce',
+            r'is\s+(low|high|good|bad|an?\s+issue|a\s+problem)',
+            r'so\s+\w+\s+is\s+(an?\s+issue|a\s+problem)',
+            r'\.\s*that\'?s\s+\w+',
+            r'rainfall\s+is\s+\d+',
+            r'temperature\s+is\s+\d+',
+            r'drainage\s+score\s+is',
+            r'clean-up\s+drives\s+happen',
         ]
         
         for line in lines:
@@ -112,7 +156,7 @@ Start each recommendation with an action verb (Implement, Organize, Conduct, etc
             # Check if line contains meta-commentary
             is_meta = any(re.search(pattern, line_lower, re.IGNORECASE) for pattern in meta_patterns)
             
-            # Also check for common meta phrases
+            # Also check for common meta phrases and analytical text
             if any(phrase in line_lower for phrase in [
                 'ensure they are clear',
                 'directly tied to reducing',
@@ -141,7 +185,36 @@ Start each recommendation with an action verb (Implement, Organize, Conduct, etc
                 'i need to ensure',
                 'let me organize',
                 'let me provide',
+                # Analytical/descriptive phrases about input values
+                'that\'s low',
+                'that\'s high',
+                'that\'s good',
+                'that\'s bad',
+                'that\'s even lower',
+                'which is good',
+                'which is bad',
+                'which can lead',
+                'even though the score',
+                'maybe there\'s room',
+                'could further reduce',
+                'is an issue',
+                'is a problem',
+                'so waste management is',
+                'so standing water is',
+                'times a year',
+                'times per year',
+                'which is frequent',
+                'which is within',
+                'out of 5',
+                'rainy days, which',
             ]):
+                is_meta = True
+            
+            # Check if line describes/analyzes input values (e.g., "30% of houses", "Drainage score is 4")
+            if re.search(r'\d+%\s+of\s+houses', line_lower) or \
+               re.search(r'^(drainage|temperature|rainfall|clean-up).*is\s+\d+', line_lower) or \
+               re.search(r'score\s+is\s+\d+\s+out\s+of', line_lower) or \
+               re.search(r'happen\s+\d+\s+times', line_lower):
                 is_meta = True
             
             # Check for sentences that contain meta-instructions (even if part of longer text)

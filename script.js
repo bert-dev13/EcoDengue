@@ -23,6 +23,7 @@ const predictBtn = document.getElementById('predictBtn');
 const resetBtn = document.getElementById('resetBtn');
 const resultsSection = document.getElementById('resultsSection');
 const dengueCasesValue = document.getElementById('dengueCasesValue');
+const dengueCasesValueOriginal = document.getElementById('dengueCasesValueOriginal');
 const recommendationsSection = document.getElementById('recommendationsSection');
 const recommendationsLoading = document.getElementById('recommendationsLoading');
 const recommendationsText = document.getElementById('recommendationsText');
@@ -76,6 +77,16 @@ function isValidPercentage(value) {
     return !isNaN(num) && num >= 0 && num <= 100 && isFinite(num);
 }
 
+/**
+ * Validates drainage score input (1-5)
+ * @param {string} value - Input value to validate
+ * @returns {boolean} True if valid drainage score, false otherwise
+ */
+function isValidDrainageScore(value) {
+    const num = parseFloat(value);
+    return !isNaN(num) && num >= 1 && num <= 5 && isFinite(num);
+}
+
 // ============================================
 // Core Calculation Functions
 // ============================================
@@ -88,15 +99,15 @@ function isValidPercentage(value) {
  * @param {number} stagnantWater - % of Houses Free of Stagnant Water (F)
  * @param {number} drainageScore - Drainage Score (D)
  * @param {number} temperature - Temperature in °C (T)
- * @param {number} rainfall - Rainfall in mm (R)
- * @param {number} cleanupScore - Community Clean-Up Score (U)
+ * @param {number} rainfall - Rainfall (Number of Rainy Days) (R)
+ * @param {number} cleanupScore - Community Clean-Up Drive Frequency (U)
  * @returns {number} Predicted number of dengue cases
  */
 function calculateDengueCases(wasteDisposal, stagnantWater, drainageScore, temperature, rainfall, cleanupScore) {
     // Ensure inputs are numbers
     const W = parseFloat(wasteDisposal) || 0;
     const F = parseFloat(stagnantWater) || 0;
-    const D = parseFloat(drainageScore) || 0;
+    const D = parseFloat(drainageScore) || 1; // Default to 1 for drainage score (range 1-5)
     const T = parseFloat(temperature) || 0;
     const R = parseFloat(rainfall) || 0;
     const U = parseFloat(cleanupScore) || 0;
@@ -192,8 +203,15 @@ function displayResults(dengueCases) {
     // Show results section with animation first
     resultsSection.style.display = 'block';
     
-    // Format and display dengue cases immediately
-    dengueCasesValue.textContent = formatNumber(dengueCases);
+    // Calculate rounded value (main result)
+    const roundedCases = Math.round(dengueCases);
+    
+    // Format and display rounded dengue cases as main result
+    dengueCasesValue.textContent = formatNumber(roundedCases, 0);
+    
+    // Display original value below for reference with label
+    dengueCasesValueOriginal.innerHTML = `<span style="font-weight: 600;">Original result:</span> ${formatNumber(dengueCases, 2)} <span style="font-size: 0.85em; opacity: 0.8;">(Orihinal na Resulta)</span>`;
+    dengueCasesValueOriginal.style.display = 'block';
     
     // Update risk indicator simultaneously (not after delay)
     updateRiskIndicator(dengueCases);
@@ -264,9 +282,20 @@ async function fetchRecommendations(dengueCases) {
             recommendationsLoading.style.display = 'none';
             recommendationsText.style.display = 'block';
             
-            // Format and display recommendations
-            const formattedText = formatRecommendations(data.recommendations);
-            recommendationsText.innerHTML = formattedText;
+            // Format and display recommendations with error handling
+            try {
+                const formattedText = formatRecommendations(data.recommendations);
+                recommendationsText.innerHTML = formattedText;
+            } catch (formatError) {
+                console.error('Error formatting recommendations:', formatError);
+                recommendationsText.innerHTML = `
+                    <div class="recommendations-error">
+                        <p>⚠️ Error displaying recommendations.</p>
+                        <p class="error-detail">${formatError.message}</p>
+                        <p class="error-hint">Please try again.</p>
+                    </div>
+                `;
+            }
             
             // Scroll recommendations into view smoothly
             setTimeout(() => {
@@ -338,7 +367,24 @@ function filterMetaText(text) {
         /and\s+i\s+need\s+to/i,
         /and\s+let\s+me/i,
         /\.\s*and\s+i\s+need/i,
-        /\.\s*let\s+me\s+(list|organize|provide)/i
+        /\.\s*let\s+me\s+(list|organize|provide)/i,
+        // Patterns for analyzing/describing input values
+        /\d+%\s+of\s+houses/i,
+        /that'?s\s+(low|high|good|bad|even\s+lower|even\s+higher)/i,
+        /which\s+is\s+(good|bad|low|high|within|outside)/i,
+        /which\s+can\s+lead\s+to/i,
+        /even\s+though\s+the\s+score/i,
+        /maybe\s+there'?s\s+room/i,
+        /could\s+further\s+reduce/i,
+        /\b(is|are)\s+(low|high|good|bad|an?\s+issue|a\s+problem)/i,
+        /so\s+\w+\s+is\s+(an?\s+issue|a\s+problem)/i,
+        /\.\s*that'?s\s+\w+/i,
+        /rainfall\s+is\s+\d+/i,
+        /temperature\s+is\s+\d+/i,
+        /drainage\s+score\s+is/i,
+        /clean-up\s+drives\s+happen/i,
+        /score\s+is\s+\d+\s+out\s+of/i,
+        /happen\s+\d+\s+times/i
     ];
     
     const lines = text.split('\n');
@@ -417,6 +463,32 @@ function filterMetaText(text) {
             continue;
         }
         
+        // Filter out lines that analyze/describe input values
+        if (/\d+%\s+of\s+houses/.test(trimmedLower) ||
+            /that'?s\s+(low|high|good|bad|even\s+lower)/.test(trimmedLower) ||
+            /which\s+is\s+(good|bad|low|high|within)/.test(trimmedLower) ||
+            /which\s+can\s+lead/.test(trimmedLower) ||
+            /even\s+though\s+the\s+score/.test(trimmedLower) ||
+            /maybe\s+there'?s\s+room/.test(trimmedLower) ||
+            /could\s+further\s+reduce/.test(trimmedLower) ||
+            /\bis\s+(an?\s+issue|a\s+problem)/.test(trimmedLower) ||
+            /so\s+\w+\s+is\s+(an?\s+issue|a\s+problem)/.test(trimmedLower) ||
+            /^(drainage|temperature|rainfall|clean-up).*is\s+\d+/.test(trimmedLower) ||
+            /score\s+is\s+\d+\s+out\s+of/.test(trimmedLower) ||
+            /happen\s+\d+\s+times/.test(trimmedLower) ||
+            /times\s+(a|per)\s+year/.test(trimmedLower) ||
+            /which\s+is\s+(frequent|within)/.test(trimmedLower) ||
+            /rainy\s+days,?\s+which/.test(trimmedLower) ||
+            /environmental\s+interventions\s+need\s+to/.test(trimmedLower) ||
+            /public\s+awareness\s+is\s+vital/.test(trimmedLower)) {
+            continue;
+        }
+        
+        // Filter out standalone emoji lines
+        if (/^[\u{1F300}-\u{1F9FF}]+$/u.test(trimmed)) {
+            continue;
+        }
+        
         filteredLines.push(line);
     }
     
@@ -436,18 +508,130 @@ function formatRecommendations(recommendations) {
     // Filter out meta-commentary first
     const filteredRecommendations = filterMetaText(recommendations);
     
-    // Category mapping with icons
+    // Category mapping with icons and keywords for auto-categorization
     const categoryMap = {
-        'waste management': { icon: '🗑️', title: 'Waste Management Strategies', color: 'var(--primary)' },
-        'vector control': { icon: '🦟', title: 'Vector Control Measures', color: 'var(--accent)' },
-        'community health': { icon: '👥', title: 'Community Health Tips', color: 'var(--secondary)' },
-        'environmental': { icon: '🌿', title: 'Environmental Interventions', color: 'var(--primary)' },
-        'preventive': { icon: '🛡️', title: 'Preventive Measures', color: 'var(--secondary)' },
-        'prevention': { icon: '🛡️', title: 'Preventive Measures', color: 'var(--secondary)' },
-        'public awareness': { icon: '📢', title: 'Public Awareness & Education', color: 'var(--primary)' },
-        'awareness': { icon: '📢', title: 'Public Awareness & Education', color: 'var(--primary)' },
-        'education': { icon: '📢', title: 'Public Awareness & Education', color: 'var(--primary)' }
+        'waste management': { 
+            icon: '🗑️', 
+            title: 'Waste Management Strategies', 
+            color: 'var(--primary)',
+            keywords: ['waste', 'garbage', 'trash', 'disposal', 'recycling', 'collection', 'bin', 'bins', 'refuse', 'litter']
+        },
+        'vector control': { 
+            icon: '🦟', 
+            title: 'Vector Control Measures', 
+            color: 'var(--accent)',
+            keywords: ['mosquito', 'larva', 'larvicidal', 'fogging', 'larvivorous', 'vector', 'breeding', 'larviciding', 'trap', 'traps']
+        },
+        'community health': { 
+            icon: '👥', 
+            title: 'Community Health Tips', 
+            color: 'var(--secondary)',
+            keywords: ['protective', 'clothing', 'repellent', 'repellents', 'mosquito net', 'nets', 'personal', 'residents', 'wear', 'health', 'treatment', 'detection']
+        },
+        'environmental': { 
+            icon: '🌿', 
+            title: 'Environmental Interventions', 
+            color: 'var(--primary)',
+            keywords: ['drainage', 'stagnant', 'water', 'green space', 'urban heat', 'environmental', 'stagnation', 'debris', 'clean-up', 'cleanup']
+        },
+        'preventive': { 
+            icon: '🛡️', 
+            title: 'Preventive Measures', 
+            color: 'var(--secondary)',
+            keywords: ['preventive', 'prevention', 'early detection', 'mobile health', 'surveillance', 'monitoring', 'vulnerable']
+        },
+        'prevention': { 
+            icon: '🛡️', 
+            title: 'Preventive Measures', 
+            color: 'var(--secondary)',
+            keywords: ['preventive', 'prevention', 'early detection', 'mobile health', 'surveillance', 'monitoring', 'vulnerable']
+        },
+        'public awareness': { 
+            icon: '📢', 
+            title: 'Public Awareness & Education', 
+            color: 'var(--primary)',
+            keywords: ['awareness', 'education', 'campaign', 'campaigns', 'workshop', 'workshops', 'social media', 'pamphlet', 'pamphlets', 'disseminate', 'informational', 'educate', 'public']
+        },
+        'awareness': { 
+            icon: '📢', 
+            title: 'Public Awareness & Education', 
+            color: 'var(--primary)',
+            keywords: ['awareness', 'education', 'campaign', 'campaigns', 'workshop', 'workshops', 'social media', 'pamphlet', 'pamphlets', 'disseminate', 'informational', 'educate', 'public']
+        },
+        'education': { 
+            icon: '📢', 
+            title: 'Public Awareness & Education', 
+            color: 'var(--primary)',
+            keywords: ['awareness', 'education', 'campaign', 'campaigns', 'workshop', 'workshops', 'social media', 'pamphlet', 'pamphlets', 'disseminate', 'informational', 'educate', 'public']
+        }
     };
+    
+    /**
+     * Automatically categorize a recommendation based on keywords
+     * @param {string} content - Recommendation text
+     * @returns {string|null} Category key or null if no match
+     */
+    function autoCategorize(content) {
+        // Remove HTML tags and get plain text
+        const plainContent = content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+        const contentLower = plainContent.toLowerCase();
+        
+        let bestMatch = null;
+        let maxScore = 0;
+        
+        // Define category priority and scoring
+        const categoryScores = {};
+        
+        // Check each category for keyword matches with weighted scoring
+        for (const [categoryKey, categoryData] of Object.entries(categoryMap)) {
+            if (!categoryData.keywords) continue;
+            categoryScores[categoryKey] = 0;
+            
+            // Primary keywords (more specific, higher weight)
+            // Map category keys to their primary keywords
+            let primaryKeywordList = null;
+            if (categoryKey === 'waste management') {
+                primaryKeywordList = ['waste disposal', 'waste collection', 'waste bin', 'recycling', 'garbage collection', 'waste'];
+            } else if (categoryKey === 'vector control') {
+                primaryKeywordList = ['mosquito', 'larva', 'fogging', 'larvicidal', 'larvivorous', 'vector control', 'larviciding'];
+            } else if (categoryKey === 'community health') {
+                primaryKeywordList = ['protective clothing', 'mosquito net', 'repellent', 'personal protective', 'health unit', 'nets', 'residents'];
+            } else if (categoryKey === 'environmental') {
+                primaryKeywordList = ['drainage', 'stagnant water', 'green space', 'clean-up', 'cleanup', 'debris', 'stagnation'];
+            } else if (categoryKey === 'preventive' || categoryKey === 'prevention') {
+                primaryKeywordList = ['early detection', 'mobile health', 'surveillance', 'monitoring', 'vulnerable population', 'preventive'];
+            } else if (categoryKey === 'public awareness' || categoryKey === 'awareness' || categoryKey === 'education') {
+                primaryKeywordList = ['campaign', 'workshop', 'social media', 'pamphlet', 'awareness', 'educate', 'public', 'workshops', 'campaigns'];
+            }
+            
+            // Check primary keywords first (weight: 3)
+            if (primaryKeywordList) {
+                for (const keyword of primaryKeywordList) {
+                    if (contentLower.includes(keyword)) {
+                        categoryScores[categoryKey] += 3;
+                        break; // Only count once per category for primary keywords
+                    }
+                }
+            }
+            
+            // Check all keywords (weight: 1)
+            for (const keyword of categoryData.keywords) {
+                // Use word boundaries for better matching
+                const regex = new RegExp('\\b' + keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+                if (regex.test(contentLower)) {
+                    categoryScores[categoryKey] += 1;
+                }
+            }
+            
+            if (categoryScores[categoryKey] > maxScore) {
+                maxScore = categoryScores[categoryKey];
+                bestMatch = categoryKey;
+            }
+        }
+        
+        // Only return a match if score is significant (at least 1)
+        return maxScore > 0 ? bestMatch : null;
+    }
     
     // Parse recommendations into categories
     const categories = {};
@@ -471,9 +655,13 @@ function formatRecommendations(recommendations) {
         const allCapsMatch = trimmed.match(/^[A-Z\s]{10,}$/);
         
         if (boldHeaderMatch || markdownHeaderMatch || colonHeaderMatch || allCapsMatch) {
-            // Save previous category
+            // Save previous category if it has items
             if (currentCategory && currentItems.length > 0) {
-                categories[currentCategory] = currentItems;
+                if (!categories[currentCategory]) {
+                    categories[currentCategory] = [];
+                }
+                // Merge items (in case category already exists)
+                categories[currentCategory].push(...currentItems);
             }
             
             // Extract category name and title
@@ -532,7 +720,8 @@ function formatRecommendations(recommendations) {
                 categoryMap[currentCategory] = {
                     icon: '📋',
                     title: categoryTitle || cleanName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-                    color: 'var(--primary)'
+                    color: 'var(--primary)',
+                    keywords: []
                 };
             } else {
                 // Use the original title if available, otherwise use mapped title
@@ -545,20 +734,47 @@ function formatRecommendations(recommendations) {
             currentItems = [];
         } else if (trimmed.match(/^[-•*]\s/) || trimmed.match(/^\d+[\.\)]\s/) || trimmed.match(/^[•]\s/)) {
             // List item - bullet point or numbered
+            // Remove bullet marker and clean content
+            let content = trimmed.replace(/^[-•*\d\.\)]\s+/, '').trim();
+            
+            // Auto-categorize the content
+            const detectedCategory = autoCategorize(content) || 'general';
+            
+            // Ensure the detected category exists in categoryMap
+            if (detectedCategory && !categoryMap[detectedCategory]) {
+                categoryMap[detectedCategory] = {
+                    icon: '📋',
+                    title: detectedCategory.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                    color: 'var(--primary)',
+                    keywords: []
+                };
+            }
+            
+            // If no current category, set it
             if (!currentCategory) {
-                // If no category, create a default one
-                currentCategory = 'general';
-                if (!categoryMap[currentCategory]) {
+                currentCategory = detectedCategory;
+                currentItems = [];
+                // Initialize general category if needed
+                if (currentCategory === 'general' && !categoryMap[currentCategory]) {
                     categoryMap[currentCategory] = {
                         icon: '📋',
                         title: 'Recommendations',
-                        color: 'var(--primary)'
+                        color: 'var(--primary)',
+                        keywords: []
                     };
                 }
+            } else if (detectedCategory !== currentCategory) {
+                // Category changed - save previous category
+                if (currentItems.length > 0) {
+                    if (!categories[currentCategory]) {
+                        categories[currentCategory] = [];
+                    }
+                    categories[currentCategory].push(...currentItems);
+                }
+                // Switch to new category
+                currentCategory = detectedCategory;
+                currentItems = [];
             }
-            
-            // Remove bullet marker and clean content
-            let content = trimmed.replace(/^[-•*\d\.\)]\s+/, '').trim();
             
             // Check if content is meta-text and skip it
             const contentLower = content.toLowerCase();
@@ -598,7 +814,23 @@ function formatRecommendations(recommendations) {
                               contentLower.includes('i need to make sure') ||
                               contentLower.includes('let me list them out') ||
                               contentLower.includes('without any explanations') ||
-                              contentLower.includes('just the actions');
+                              contentLower.includes('just the actions') ||
+                              // Analytical/descriptive patterns about input values
+                              /\d+%\s+of\s+houses/.test(contentLower) ||
+                              /that'?s\s+(low|high|good|bad|even\s+lower)/.test(contentLower) ||
+                              /which\s+is\s+(good|bad|low|high|within)/.test(contentLower) ||
+                              /which\s+can\s+lead/.test(contentLower) ||
+                              /even\s+though\s+the\s+score/.test(contentLower) ||
+                              /maybe\s+there'?s\s+room/.test(contentLower) ||
+                              /could\s+further\s+reduce/.test(contentLower) ||
+                              /\bis\s+(an?\s+issue|a\s+problem)/.test(contentLower) ||
+                              /so\s+\w+\s+is\s+(an?\s+issue|a\s+problem)/.test(contentLower) ||
+                              /^(drainage|temperature|rainfall|clean-up).*is\s+\d+/.test(contentLower) ||
+                              /score\s+is\s+\d+\s+out\s+of/.test(contentLower) ||
+                              /happen\s+\d+\s+times/.test(contentLower) ||
+                              /times\s+(a|per)\s+year/.test(contentLower) ||
+                              /which\s+is\s+(frequent|within)/.test(contentLower) ||
+                              /rainy\s+days,?\s+which/.test(contentLower);
             
             // Check for sentences that contain meta-instructions (even if part of longer text)
             if (!isMetaText && (
@@ -631,14 +863,34 @@ function formatRecommendations(recommendations) {
             // Remove markdown italic
             content = content.replace(/\*([^*]+)\*/g, '<em>$1</em>');
             if (content && content.length > 3) {
+                // Add to current category's items array
                 currentItems.push(content);
             }
         } else if (trimmed.length > 15) {
             // Regular paragraph or sentence - might be a recommendation
-            // Only add if it looks like actionable content
+            // Filter out analytical/explanatory text that doesn't start with action verbs
+            const trimmedLower = trimmed.toLowerCase();
+            if (/\d+%\s+of\s+houses/.test(trimmedLower) ||
+                /that'?s\s+(low|high|good|bad|even\s+lower)/.test(trimmedLower) ||
+                /which\s+is\s+(good|bad|low|high|within)/.test(trimmedLower) ||
+                /which\s+can\s+lead/.test(trimmedLower) ||
+                /even\s+though\s+the\s+score/.test(trimmedLower) ||
+                /maybe\s+there'?s\s+room/.test(trimmedLower) ||
+                /^(drainage|temperature|rainfall|clean-up).*is\s+\d+/.test(trimmedLower) ||
+                /score\s+is\s+\d+\s+out\s+of/.test(trimmedLower) ||
+                /happen\s+\d+\s+times/.test(trimmedLower) ||
+                /times\s+(a|per)\s+year/.test(trimmedLower) ||
+                /which\s+is\s+(frequent|within)/.test(trimmedLower) ||
+                /rainy\s+days,?\s+which/.test(trimmedLower) ||
+                /environmental\s+interventions\s+need\s+to/.test(trimmedLower) ||
+                /public\s+awareness\s+is\s+vital/.test(trimmedLower)) {
+                // Skip analytical/explanatory paragraphs
+                return;
+            }
+            
+            // Only add if it looks like actionable content starting with action verbs
             if (trimmed.match(/^(Implement|Organize|Conduct|Distribute|Provide|Educate|Encourage|Promote|Establish|Launch|Improve|Ensure|Install)/i)) {
                 // Check if content is meta-text and skip it
-                const trimmedLower = trimmed.toLowerCase();
                 let isMetaText = /finally,?\s*i'?ll\s+(review|ensure|check|provide|make)/i.test(trimmed) ||
                                   /let\s+me\s+(review|ensure|check|provide|make|ensure|go\s+through|list)/i.test(trimmed) ||
                                   /i\s+need\s+to\s+(make\s+sure|ensure|check|list)/i.test(trimmed) ||
@@ -675,7 +927,23 @@ function formatRecommendations(recommendations) {
                                   trimmedLower.includes('i need to make sure') ||
                                   trimmedLower.includes('let me list them out') ||
                                   trimmedLower.includes('without any explanations') ||
-                                  trimmedLower.includes('just the actions');
+                                  trimmedLower.includes('just the actions') ||
+                                  // Analytical/descriptive patterns about input values
+                                  /\d+%\s+of\s+houses/.test(trimmedLower) ||
+                                  /that'?s\s+(low|high|good|bad|even\s+lower)/.test(trimmedLower) ||
+                                  /which\s+is\s+(good|bad|low|high|within)/.test(trimmedLower) ||
+                                  /which\s+can\s+lead/.test(trimmedLower) ||
+                                  /even\s+though\s+the\s+score/.test(trimmedLower) ||
+                                  /maybe\s+there'?s\s+room/.test(trimmedLower) ||
+                                  /could\s+further\s+reduce/.test(trimmedLower) ||
+                                  /\bis\s+(an?\s+issue|a\s+problem)/.test(trimmedLower) ||
+                                  /so\s+\w+\s+is\s+(an?\s+issue|a\s+problem)/.test(trimmedLower) ||
+                                  /^(drainage|temperature|rainfall|clean-up).*is\s+\d+/.test(trimmedLower) ||
+                                  /score\s+is\s+\d+\s+out\s+of/.test(trimmedLower) ||
+                                  /happen\s+\d+\s+times/.test(trimmedLower) ||
+                                  /times\s+(a|per)\s+year/.test(trimmedLower) ||
+                                  /which\s+is\s+(frequent|within)/.test(trimmedLower) ||
+                                  /rainy\s+days,?\s+which/.test(trimmedLower);
                 
                 // Check for sentences that contain meta-instructions (even if part of longer text)
                 if (!isMetaText && (
@@ -722,63 +990,132 @@ function formatRecommendations(recommendations) {
         }
     });
     
-    // Save last category
+    // Save last category if it has items
     if (currentCategory && currentItems.length > 0) {
-        categories[currentCategory] = currentItems;
+        if (!categories[currentCategory]) {
+            categories[currentCategory] = [];
+        }
+        categories[currentCategory].push(...currentItems);
     }
     
-    // If no categories found, try to extract from plain text
-    if (Object.keys(categories).length === 0) {
-        // Fallback: create a single category with all items
+    // If no categories found or only one category with many items, try to auto-categorize all items
+    const categoryKeys = Object.keys(categories);
+    const totalItems = Object.values(categories).reduce((sum, items) => sum + items.length, 0);
+    
+    // If we have many items in a single category, re-categorize them
+    if (categoryKeys.length === 0 || 
+        (categoryKeys.length === 1 && totalItems > 5) ||
+        (categoryKeys.length === 1 && categoryKeys[0] === 'general')) {
+        // Collect all bullet point items and auto-categorize them
         const allItems = lines
             .filter(line => line.trim().match(/^[-•*]\s/) || line.trim().match(/^\d+[\.\)]\s/))
             .map(line => {
                 let content = line.trim().replace(/^[-•*\d\.\)]\s+/, '').trim();
+                // Skip if it's meta-text
+                const contentLower = content.toLowerCase();
+                const isMetaText = 
+                    /finally,?\s*i'?ll\s+(review|ensure|check|provide|make)/i.test(content) ||
+                    /let\s+me\s+(review|ensure|check|provide|make|ensure|go\s+through|list)/i.test(content) ||
+                    /\d+%\s+of\s+houses/.test(contentLower) ||
+                    /that'?s\s+(low|high|good|bad|even\s+lower)/.test(contentLower) ||
+                    /which\s+is\s+(good|bad|low|high|within)/.test(contentLower) ||
+                    /environmental\s+interventions\s+need\s+to/.test(contentLower) ||
+                    /public\s+awareness\s+is\s+(crucial|vital)/.test(contentLower);
+                
+                if (isMetaText) return null;
+                
                 content = content.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
                 return content;
             })
-            .filter(item => {
-                // Filter out meta-text items
-                if (item.length === 0) return false;
-                const itemLower = item.toLowerCase();
-                const isMetaText = /finally,?\s*i'?ll\s+(review|ensure|check|provide|make)/i.test(item) ||
-                                  /let\s+me\s+(review|ensure|check|provide|make|ensure|go\s+through)/i.test(item) ||
-                                  /i\s+should\s+(avoid|keep|make|start)/i.test(item) ||
-                                  /to\s+ensure\s+they\s+are\s+clear/i.test(item) ||
-                                  /directly\s+tied\s+to\s+reducing/i.test(item) ||
-                                  /targeting\s+the\s+given\s+factors/i.test(item) ||
-                                  /each\s+point\s+should\s+start/i.test(item) ||
-                                  /keep\s+the\s+language\s+(clear|concise)/i.test(item) ||
-                                  /thought\s+process/i.test(item) ||
-                                  /based\s+on\s+the\s+factors\s+and\s+the\s+thought\s+process/i.test(item) ||
-                                  /go\s+through\s+each\s+category/i.test(item) ||
-                                  /avoid\s+any\s+markdown/i.test(item) ||
-                                  itemLower.includes('ensure they are clear') ||
-                                  itemLower.includes('directly tied to reducing') ||
-                                  itemLower.includes('targeting the given factors') ||
-                                  itemLower.includes('thought process') ||
-                                  itemLower.includes('go through each category') ||
-                                  itemLower.includes('each point should start') ||
-                                  itemLower.includes('keep the language clear') ||
-                                  itemLower.includes('keep the language concise') ||
-                                  itemLower.includes('avoid any markdown') ||
-                                  itemLower.includes('start with a verb') ||
-                                  itemLower.includes('make it actionable') ||
-                                  itemLower.includes('i should avoid') ||
-                                  itemLower.includes('i should keep');
-                return !isMetaText;
-            });
+            .filter(item => item !== null && item.length > 3);
         
+        // Auto-categorize all items
         if (allItems.length > 0) {
-            categories['general'] = allItems;
-            if (!categoryMap['general']) {
-                categoryMap['general'] = {
-                    icon: '📋',
-                    title: 'Recommendations',
-                    color: 'var(--primary)'
-                };
+            // Collect items from existing categories if any
+            const existingItems = [];
+            categoryKeys.forEach(key => {
+                if (categories[key] && Array.isArray(categories[key])) {
+                    existingItems.push(...categories[key]);
+                }
+            });
+            
+            // Combine with newly found items
+            const allItemsToCategorize = existingItems.length > 0 ? existingItems : allItems;
+            
+            // Clear and re-categorize
+            categories = {};
+            
+            // Group items by category
+            allItemsToCategorize.forEach(item => {
+                if (!item || typeof item !== 'string') return;
+                
+                // Remove HTML tags for categorization (they were added during processing)
+                const plainItem = item.replace(/<[^>]+>/g, '');
+                const itemCategory = autoCategorize(plainItem) || 'general';
+                
+                // Ensure itemCategory is a valid string
+                const validCategory = (itemCategory && typeof itemCategory === 'string') ? itemCategory : 'general';
+                
+                if (!categories[validCategory]) {
+                    categories[validCategory] = [];
+                }
+                categories[validCategory].push(item);
+                
+                // Immediately ensure category exists in categoryMap
+                if (validCategory && !categoryMap[validCategory]) {
+                    const cleanTitle = validCategory.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    categoryMap[validCategory] = {
+                        icon: '📋',
+                        title: cleanTitle,
+                        color: 'var(--primary)',
+                        keywords: []
+                    };
+                }
+            });
+        }
+    }
+    
+    // Ensure all categories in use have entries in categoryMap with all required properties
+    Object.keys(categories).forEach(categoryKey => {
+        // Skip invalid keys
+        if (!categoryKey || typeof categoryKey !== 'string') {
+            return;
+        }
+        
+        // Create category entry if it doesn't exist
+        if (!categoryMap[categoryKey]) {
+            const cleanTitle = categoryKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            categoryMap[categoryKey] = {
+                icon: '📋',
+                title: cleanTitle,
+                color: 'var(--primary)',
+                keywords: []
+            };
+        }
+        
+        // Ensure all required properties exist
+        const cat = categoryMap[categoryKey];
+        if (cat) {
+            if (!cat.icon || typeof cat.icon !== 'string') {
+                cat.icon = '📋';
+            }
+            if (!cat.title || typeof cat.title !== 'string') {
+                cat.title = categoryKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            }
+            if (!cat.color || typeof cat.color !== 'string') {
+                cat.color = 'var(--primary)';
             }
         }
+    });
+    
+    // Ensure general category exists if needed
+    if (!categoryMap['general']) {
+        categoryMap['general'] = {
+            icon: '📋',
+            title: 'Recommendations',
+            color: 'var(--primary)',
+            keywords: []
+        };
     }
     
     // Generate HTML for category cards
@@ -790,16 +1127,84 @@ function formatRecommendations(recommendations) {
     let delay = 0;
     
     Object.entries(categories).forEach(([categoryKey, items]) => {
-        const category = categoryMap[categoryKey] || categoryMap['general'];
+        // Skip empty categories
+        if (!items || !Array.isArray(items) || items.length === 0) {
+            return;
+        }
+        
+        // Validate categoryKey
+        if (!categoryKey || typeof categoryKey !== 'string') {
+            console.warn('Invalid categoryKey:', categoryKey);
+            return; // Skip this category
+        }
+        
+        // Get category with multiple fallbacks to prevent undefined errors
+        let category = null;
+        
+        // Try to get category from map
+        try {
+            if (categoryMap && typeof categoryMap === 'object' && categoryMap[categoryKey]) {
+                category = categoryMap[categoryKey];
+            }
+            
+            // Fallback to general if category not found or invalid
+            if (!category || typeof category !== 'object') {
+                if (categoryMap && typeof categoryMap === 'object' && categoryMap['general']) {
+                    category = categoryMap['general'];
+                }
+            }
+        } catch (e) {
+            console.warn('Error accessing categoryMap:', e);
+        }
+        
+        // Final fallback: create default category object if still no valid category
+        // Check category exists and is object first, then check properties
+        if (!category || typeof category !== 'object') {
+            const cleanTitle = categoryKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            category = {
+                icon: '📋',
+                title: cleanTitle || 'Recommendations',
+                color: 'var(--primary)'
+            };
+        } else {
+            // Category exists, but ensure it has required properties
+            if (!category.icon || typeof category.icon !== 'string') {
+                category.icon = '📋';
+            }
+            if (!category.title || typeof category.title !== 'string') {
+                category.title = categoryKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Recommendations';
+            }
+            if (!category.color || typeof category.color !== 'string') {
+                category.color = 'var(--primary)';
+            }
+        }
+        
+        // Extract properties - at this point category is guaranteed to exist and have all properties
+        const categoryIcon = category.icon || '📋';
+        const categoryTitle = category.title || 'Recommendations';
+        
+        // Filter and validate items before rendering
+        const validItems = items.filter(item => {
+            return item && typeof item === 'string' && item.trim().length > 0;
+        });
+        
+        // Only render if there are valid items
+        if (validItems.length === 0) {
+            return; // Skip this category if no valid items
+        }
         
         html += `
             <div class="recommendation-category-card" style="animation-delay: ${delay * 0.1}s;">
                 <div class="category-header">
-                    <div class="category-icon">${category.icon}</div>
-                    <h3 class="category-title">${category.title}</h3>
+                    <div class="category-icon">${categoryIcon}</div>
+                    <h3 class="category-title">${categoryTitle}</h3>
                 </div>
                 <ul class="recommendation-list">
-                    ${items.map(item => `<li class="recommendation-item">${item}</li>`).join('')}
+                    ${validItems.map(item => {
+                        // Items may contain HTML formatting from markdown conversion, so we validate but don't escape
+                        const safeItem = String(item || '').trim();
+                        return safeItem ? `<li class="recommendation-item">${safeItem}</li>` : '';
+                    }).filter(li => li.length > 0).join('')}
                 </ul>
             </div>
         `;
@@ -1085,7 +1490,7 @@ function downloadPDF() {
         
         paramY += paramLineHeight;
         doc.setFont('helvetica', 'bold');
-        doc.text('Drainage Score:', paramLeftCol, paramY);
+        doc.text('Drainage Score (1-5):', paramLeftCol, paramY);
         doc.setFont('helvetica', 'normal');
         doc.text(`${formData.drainageScore}`, paramLeftCol + 50, paramY);
         
@@ -1098,13 +1503,13 @@ function downloadPDF() {
         
         paramY += paramLineHeight;
         doc.setFont('helvetica', 'bold');
-        doc.text('Rainfall:', paramRightCol, paramY);
+        doc.text('Rainfall (Rainy Days):', paramRightCol, paramY);
         doc.setFont('helvetica', 'normal');
-        doc.text(`${formData.rainfall}mm`, paramRightCol + 45, paramY);
+        doc.text(`${formData.rainfall} days`, paramRightCol + 45, paramY);
         
         paramY += paramLineHeight;
         doc.setFont('helvetica', 'bold');
-        doc.text('Clean-Up Score:', paramRightCol, paramY);
+        doc.text('Clean-Up Drive (Frequency):', paramRightCol, paramY);
         doc.setFont('helvetica', 'normal');
         doc.text(`${formData.cleanupScore}`, paramRightCol + 45, paramY);
         
@@ -1220,10 +1625,10 @@ ${riskLevel.description}
 Input Parameters:
 - Waste Disposal: ${formData.wasteDisposal}%
 - Stagnant Water Free: ${formData.stagnantWater}%
-- Drainage Score: ${formData.drainageScore}
+- Drainage Score: ${formData.drainageScore} (1-5)
 - Temperature: ${formData.temperature}°C
-- Rainfall: ${formData.rainfall}mm
-- Clean-Up Score: ${formData.cleanupScore}
+- Rainfall: ${formData.rainfall} days
+- Clean-Up Drive (Frequency): ${formData.cleanupScore}
 
 AI-Powered Recommendations:
 ${recommendations || 'No recommendations available.'}
@@ -1274,6 +1679,11 @@ function resetResults() {
     window.currentDengueCases = null;
     window.currentRiskLevel = null;
     
+    // Reset dengue cases display
+    dengueCasesValue.textContent = '-';
+    dengueCasesValueOriginal.innerHTML = '-';
+    dengueCasesValueOriginal.style.display = 'none';
+    
     // Reset risk badge display values
     riskLabel.textContent = '-';
     riskIcon.textContent = '⚠️';
@@ -1301,7 +1711,7 @@ function validateForm() {
     
     return isValidPercentage(wasteDisposal) && 
            isValidPercentage(stagnantWater) && 
-           isValidNumber(drainageScore) &&
+           isValidDrainageScore(drainageScore) &&
            isValidNumber(temperature) &&
            isValidNumber(rainfall) &&
            isValidNumber(cleanupScore);
@@ -1324,6 +1734,15 @@ function handleInputValidation(event) {
     // Validate percentage inputs
     if (id === 'wasteDisposal' || id === 'stagnantWater') {
         if (isValidPercentage(value)) {
+            input.classList.add('valid');
+            input.classList.remove('invalid');
+        } else {
+            input.classList.add('invalid');
+            input.classList.remove('valid');
+        }
+    } else if (id === 'drainageScore') {
+        // Validate drainage score (1-5)
+        if (isValidDrainageScore(value)) {
             input.classList.add('valid');
             input.classList.remove('invalid');
         } else {
@@ -1358,10 +1777,10 @@ function handleFormSubmit(event) {
         alert('Please enter valid values for all fields:\n\n' +
               '- Waste Disposal: 0-100%\n' +
               '- Stagnant Water: 0-100%\n' +
-              '- Drainage Score: 0 or greater\n' +
+              '- Drainage Score: 1-5\n' +
               '- Temperature: 0 or greater\n' +
-              '- Rainfall: 0 or greater\n' +
-              '- Clean-Up Score: 0 or greater\n\n' +
+              '- Rainfall: 0 or greater (Number of Rainy Days)\n' +
+              '- Clean-Up Drive (Frequency): 0 or greater\n\n' +
               'Mangyaring maglagay ng wastong halaga para sa lahat ng patlang.');
         return;
     }
