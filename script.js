@@ -309,7 +309,11 @@ function filterMetaText(text) {
     // Patterns that indicate meta-commentary or reasoning (case insensitive)
     const metaPatterns = [
         /finally,?\s*i'?ll\s+(review|ensure|check|provide|make)/i,
-        /let\s+me\s+(review|ensure|check|provide|make|ensure|go\s+through)/i,
+        /let\s+me\s+(review|ensure|check|provide|make|ensure|go\s+through|list)/i,
+        /i\s+need\s+to\s+(make\s+sure|ensure|check|list)/i,
+        /let\s+me\s+list\s+them\s+out/i,
+        /without\s+any\s+explanations/i,
+        /just\s+the\s+actions/i,
         /i'?ll\s+(review|ensure|check|provide|make|ensure)/i,
         /i\s+will\s+(review|ensure|check|provide|make|ensure)/i,
         /i\s+should\s+(avoid|keep|make|start)/i,
@@ -317,6 +321,7 @@ function filterMetaText(text) {
         /directly\s+tied\s+to\s+reducing/i,
         /targeting\s+the\s+given\s+factors/i,
         /each\s+point\s+should\s+start/i,
+        /each\s+recommendation\s+starts\s+with/i,
         /keep\s+the\s+language\s+(clear|concise)/i,
         /thought\s+process/i,
         /based\s+on\s+the\s+factors\s+and\s+the\s+thought\s+process/i,
@@ -329,51 +334,91 @@ function filterMetaText(text) {
         /^in\s+summary/i,
         /^to\s+conclude/i,
         /^these\s+recommendations\s+will/i,
-        /^by\s+implementing\s+these/i
+        /^by\s+implementing\s+these/i,
+        /and\s+i\s+need\s+to/i,
+        /and\s+let\s+me/i,
+        /\.\s*and\s+i\s+need/i,
+        /\.\s*let\s+me\s+(list|organize|provide)/i
     ];
     
     const lines = text.split('\n');
-    const filteredLines = lines.filter(line => {
-        const trimmed = line.trim().toLowerCase();
+    const filteredLines = [];
+    
+    for (let line of lines) {
+        const trimmed = line.trim();
+        const trimmedLower = trimmed.toLowerCase();
         
         // Skip empty lines
-        if (!trimmed) return false;
+        if (!trimmed) {
+            continue;
+        }
         
         // Check if line matches any meta pattern
+        let isMeta = false;
         for (const pattern of metaPatterns) {
             if (pattern.test(line)) {
-                return false; // Filter out this line
+                isMeta = true;
+                break;
             }
         }
         
-        // Filter out lines that are too short and sound like meta-text
-        if (trimmed.length < 20 && (
-            trimmed.includes('ensure') ||
-            trimmed.includes('review') ||
-            trimmed.includes('check') ||
-            trimmed.includes('provide') ||
-            trimmed.includes('should') ||
-            trimmed.includes('avoid') ||
-            trimmed.match(/^i'?ll\s+/i) ||
-            trimmed.match(/^let\s+me\s+/i) ||
-            trimmed.match(/^i\s+should\s+/i)
+        // Check for sentences that contain meta-instructions (even if part of longer text)
+        if (!isMeta && (
+            /and\s+i\s+need\s+to\s+make\s+sure/i.test(trimmed) ||
+            /and\s+let\s+me\s+list/i.test(trimmed) ||
+            /\.\s*and\s+i\s+need/i.test(trimmed) ||
+            /\.\s*let\s+me\s+(list|organize|provide)/i.test(trimmed)
         )) {
-            return false;
+            // Split the line and keep only the part before the meta-commentary
+            const parts = trimmed.split(/\.\s*(and\s+)?(i\s+need\s+to|let\s+me\s+list)/i);
+            if (parts.length > 1) {
+                // Keep only the first part (before meta-commentary)
+                const beforeMeta = parts[0].trim();
+                if (beforeMeta && beforeMeta.length > 10 && !beforeMeta.match(/^and\s+/i)) {
+                    filteredLines.push(beforeMeta + '.');
+                }
+            }
+            continue;
+        }
+        
+        if (isMeta) {
+            continue;
+        }
+        
+        // Filter out lines that are too short and sound like meta-text
+        if (trimmedLower.length < 20 && (
+            trimmedLower.includes('ensure') ||
+            trimmedLower.includes('review') ||
+            trimmedLower.includes('check') ||
+            trimmedLower.includes('provide') ||
+            trimmedLower.includes('should') ||
+            trimmedLower.includes('avoid') ||
+            /^i'?ll\s+/i.test(trimmedLower) ||
+            /^let\s+me\s+/i.test(trimmedLower) ||
+            /^i\s+should\s+/i.test(trimmedLower) ||
+            /^i\s+need\s+to/i.test(trimmedLower)
+        )) {
+            continue;
         }
         
         // Filter out lines containing meta-instructions
-        if (trimmed.includes('thought process') ||
-            trimmed.includes('go through each category') ||
-            trimmed.includes('each point should start') ||
-            trimmed.includes('keep the language') ||
-            trimmed.includes('avoid any markdown') ||
-            trimmed.includes('make it actionable') ||
-            trimmed.includes('start with a verb')) {
-            return false;
+        if (trimmedLower.includes('thought process') ||
+            trimmedLower.includes('go through each category') ||
+            trimmedLower.includes('each point should start') ||
+            trimmedLower.includes('each recommendation starts with') ||
+            trimmedLower.includes('keep the language') ||
+            trimmedLower.includes('avoid any markdown') ||
+            trimmedLower.includes('make it actionable') ||
+            trimmedLower.includes('start with a verb') ||
+            trimmedLower.includes('without any explanations') ||
+            trimmedLower.includes('just the actions') ||
+            trimmedLower.includes('let me list them out') ||
+            trimmedLower.includes('i need to make sure')) {
+            continue;
         }
         
-        return true;
-    });
+        filteredLines.push(line);
+    }
     
     return filteredLines.join('\n');
 }
@@ -517,31 +562,65 @@ function formatRecommendations(recommendations) {
             
             // Check if content is meta-text and skip it
             const contentLower = content.toLowerCase();
-            const isMetaText = /finally,?\s*i'?ll\s+(review|ensure|check|provide|make)/i.test(content) ||
-                              /let\s+me\s+(review|ensure|check|provide|make|ensure|go\s+through)/i.test(content) ||
+            let isMetaText = /finally,?\s*i'?ll\s+(review|ensure|check|provide|make)/i.test(content) ||
+                              /let\s+me\s+(review|ensure|check|provide|make|ensure|go\s+through|list)/i.test(content) ||
+                              /i\s+need\s+to\s+(make\s+sure|ensure|check|list)/i.test(content) ||
+                              /let\s+me\s+list\s+them\s+out/i.test(content) ||
+                              /without\s+any\s+explanations/i.test(content) ||
+                              /just\s+the\s+actions/i.test(content) ||
                               /i\s+should\s+(avoid|keep|make|start)/i.test(content) ||
                               /to\s+ensure\s+they\s+are\s+clear/i.test(content) ||
                               /directly\s+tied\s+to\s+reducing/i.test(content) ||
                               /targeting\s+the\s+given\s+factors/i.test(content) ||
                               /each\s+point\s+should\s+start/i.test(content) ||
+                              /each\s+recommendation\s+starts\s+with/i.test(content) ||
                               /keep\s+the\s+language\s+(clear|concise)/i.test(content) ||
                               /thought\s+process/i.test(content) ||
                               /based\s+on\s+the\s+factors\s+and\s+the\s+thought\s+process/i.test(content) ||
                               /go\s+through\s+each\s+category/i.test(content) ||
                               /avoid\s+any\s+markdown/i.test(content) ||
+                              /and\s+i\s+need\s+to/i.test(content) ||
+                              /and\s+let\s+me/i.test(content) ||
                               contentLower.includes('ensure they are clear') ||
                               contentLower.includes('directly tied to reducing') ||
                               contentLower.includes('targeting the given factors') ||
                               contentLower.includes('thought process') ||
                               contentLower.includes('go through each category') ||
                               contentLower.includes('each point should start') ||
+                              contentLower.includes('each recommendation starts with') ||
                               contentLower.includes('keep the language clear') ||
                               contentLower.includes('keep the language concise') ||
                               contentLower.includes('avoid any markdown') ||
                               contentLower.includes('start with a verb') ||
                               contentLower.includes('make it actionable') ||
                               contentLower.includes('i should avoid') ||
-                              contentLower.includes('i should keep');
+                              contentLower.includes('i should keep') ||
+                              contentLower.includes('i need to make sure') ||
+                              contentLower.includes('let me list them out') ||
+                              contentLower.includes('without any explanations') ||
+                              contentLower.includes('just the actions');
+            
+            // Check for sentences that contain meta-instructions (even if part of longer text)
+            if (!isMetaText && (
+                /and\s+i\s+need\s+to\s+make\s+sure/i.test(content) ||
+                /and\s+let\s+me\s+list/i.test(content) ||
+                /\.\s*and\s+i\s+need/i.test(content) ||
+                /\.\s*let\s+me\s+(list|organize|provide)/i.test(content)
+            )) {
+                // Split the content and keep only the part before the meta-commentary
+                const parts = content.split(/\.\s*(and\s+)?(i\s+need\s+to|let\s+me\s+list)/i);
+                if (parts.length > 1) {
+                    const beforeMeta = parts[0].trim();
+                    if (beforeMeta && beforeMeta.length > 10 && !beforeMeta.match(/^and\s+/i)) {
+                        content = beforeMeta + '.';
+                        isMetaText = false; // Content is now cleaned
+                    } else {
+                        isMetaText = true; // Skip this item entirely
+                    }
+                } else {
+                    isMetaText = true; // Skip if it's pure meta-commentary
+                }
+            }
             
             if (isMetaText) {
                 return; // Skip this item
@@ -560,31 +639,65 @@ function formatRecommendations(recommendations) {
             if (trimmed.match(/^(Implement|Organize|Conduct|Distribute|Provide|Educate|Encourage|Promote|Establish|Launch|Improve|Ensure|Install)/i)) {
                 // Check if content is meta-text and skip it
                 const trimmedLower = trimmed.toLowerCase();
-                const isMetaText = /finally,?\s*i'?ll\s+(review|ensure|check|provide|make)/i.test(trimmed) ||
-                                  /let\s+me\s+(review|ensure|check|provide|make|ensure|go\s+through)/i.test(trimmed) ||
+                let isMetaText = /finally,?\s*i'?ll\s+(review|ensure|check|provide|make)/i.test(trimmed) ||
+                                  /let\s+me\s+(review|ensure|check|provide|make|ensure|go\s+through|list)/i.test(trimmed) ||
+                                  /i\s+need\s+to\s+(make\s+sure|ensure|check|list)/i.test(trimmed) ||
+                                  /let\s+me\s+list\s+them\s+out/i.test(trimmed) ||
+                                  /without\s+any\s+explanations/i.test(trimmed) ||
+                                  /just\s+the\s+actions/i.test(trimmed) ||
                                   /i\s+should\s+(avoid|keep|make|start)/i.test(trimmed) ||
                                   /to\s+ensure\s+they\s+are\s+clear/i.test(trimmed) ||
                                   /directly\s+tied\s+to\s+reducing/i.test(trimmed) ||
                                   /targeting\s+the\s+given\s+factors/i.test(trimmed) ||
                                   /each\s+point\s+should\s+start/i.test(trimmed) ||
+                                  /each\s+recommendation\s+starts\s+with/i.test(trimmed) ||
                                   /keep\s+the\s+language\s+(clear|concise)/i.test(trimmed) ||
                                   /thought\s+process/i.test(trimmed) ||
                                   /based\s+on\s+the\s+factors\s+and\s+the\s+thought\s+process/i.test(trimmed) ||
                                   /go\s+through\s+each\s+category/i.test(trimmed) ||
                                   /avoid\s+any\s+markdown/i.test(trimmed) ||
+                                  /and\s+i\s+need\s+to/i.test(trimmed) ||
+                                  /and\s+let\s+me/i.test(trimmed) ||
                                   trimmedLower.includes('ensure they are clear') ||
                                   trimmedLower.includes('directly tied to reducing') ||
                                   trimmedLower.includes('targeting the given factors') ||
                                   trimmedLower.includes('thought process') ||
                                   trimmedLower.includes('go through each category') ||
                                   trimmedLower.includes('each point should start') ||
+                                  trimmedLower.includes('each recommendation starts with') ||
                                   trimmedLower.includes('keep the language clear') ||
                                   trimmedLower.includes('keep the language concise') ||
                                   trimmedLower.includes('avoid any markdown') ||
                                   trimmedLower.includes('start with a verb') ||
                                   trimmedLower.includes('make it actionable') ||
                                   trimmedLower.includes('i should avoid') ||
-                                  trimmedLower.includes('i should keep');
+                                  trimmedLower.includes('i should keep') ||
+                                  trimmedLower.includes('i need to make sure') ||
+                                  trimmedLower.includes('let me list them out') ||
+                                  trimmedLower.includes('without any explanations') ||
+                                  trimmedLower.includes('just the actions');
+                
+                // Check for sentences that contain meta-instructions (even if part of longer text)
+                if (!isMetaText && (
+                    /and\s+i\s+need\s+to\s+make\s+sure/i.test(trimmed) ||
+                    /and\s+let\s+me\s+list/i.test(trimmed) ||
+                    /\.\s*and\s+i\s+need/i.test(trimmed) ||
+                    /\.\s*let\s+me\s+(list|organize|provide)/i.test(trimmed)
+                )) {
+                    // Split and keep only the part before meta-commentary
+                    const parts = trimmed.split(/\.\s*(and\s+)?(i\s+need\s+to|let\s+me\s+list)/i);
+                    if (parts.length > 1) {
+                        const beforeMeta = parts[0].trim();
+                        if (beforeMeta && beforeMeta.length > 10 && !beforeMeta.match(/^and\s+/i)) {
+                            trimmed = beforeMeta + '.';
+                            isMetaText = false;
+                        } else {
+                            isMetaText = true;
+                        }
+                    } else {
+                        isMetaText = true;
+                    }
+                }
                 
                 if (isMetaText) {
                     return; // Skip this item

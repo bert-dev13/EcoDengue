@@ -80,17 +80,24 @@ Start each recommendation with an action verb (Implement, Organize, Conduct, etc
         cleaned_lines = []
         meta_patterns = [
             r'finally,?\s*i\'?ll\s+(review|ensure|check|provide|make)',
-            r'let\s+me\s+(review|ensure|check|provide|make|ensure|go\s+through)',
+            r'let\s+me\s+(review|ensure|check|provide|make|ensure|go\s+through|list)',
+            r'i\s+need\s+to\s+(make\s+sure|ensure|check|list)',
+            r'let\s+me\s+list\s+them\s+out',
+            r'without\s+any\s+explanations',
+            r'just\s+the\s+actions',
             r'to\s+ensure\s+they\s+are\s+clear',
             r'directly\s+tied\s+to\s+reducing',
             r'targeting\s+the\s+given\s+factors',
             r'i\s+should\s+(avoid|keep|make|start)',
             r'each\s+point\s+should\s+start',
+            r'each\s+recommendation\s+starts\s+with',
             r'keep\s+the\s+language\s+(clear|concise)',
             r'thought\s+process',
             r'based\s+on\s+the\s+factors\s+and\s+the\s+thought\s+process',
             r'go\s+through\s+each\s+category',
             r'avoid\s+any\s+markdown',
+            r'and\s+i\s+need\s+to',
+            r'and\s+let\s+me',
         ]
         
         for line in lines:
@@ -113,9 +120,12 @@ Start each recommendation with an action verb (Implement, Organize, Conduct, etc
                 'i\'ll review',
                 'let me ensure',
                 'let me go through',
+                'let me list them out',
+                'i need to make sure',
                 'i should avoid',
                 'i should keep',
                 'each point should start',
+                'each recommendation starts with',
                 'keep the language clear',
                 'keep the language concise',
                 'thought process',
@@ -123,8 +133,33 @@ Start each recommendation with an action verb (Implement, Organize, Conduct, etc
                 'go through each category',
                 'avoid any markdown',
                 'start with a verb',
-                'make it actionable'
+                'make it actionable',
+                'without any explanations',
+                'just the actions',
+                'and i need to',
+                'and let me',
+                'i need to ensure',
+                'let me organize',
+                'let me provide',
             ]):
+                is_meta = True
+            
+            # Check for sentences that contain meta-instructions (even if part of longer text)
+            if re.search(r'and\s+i\s+need\s+to\s+make\s+sure', line_lower) or \
+               re.search(r'and\s+let\s+me\s+list', line_lower) or \
+               re.search(r'\.\s*and\s+i\s+need', line_lower) or \
+               re.search(r'\.\s*let\s+me\s+(list|organize|provide)', line_lower):
+                # Split the line and keep only the part before the meta-commentary
+                parts = re.split(r'\.\s*(and\s+)?(i\s+need\s+to|let\s+me\s+list)', line_lower, flags=re.IGNORECASE)
+                if len(parts) > 1:
+                    # Keep only the first part (before meta-commentary)
+                    before_meta = parts[0].strip()
+                    if before_meta and len(before_meta) > 10:
+                        # Reconstruct the original case for the first part
+                        original_parts = re.split(r'\.\s*(and\s+)?(i\s+need\s+to|let\s+me\s+list)', line, flags=re.IGNORECASE)
+                        if len(original_parts) > 1:
+                            cleaned_lines.append(original_parts[0].strip() + '.')
+                    continue
                 is_meta = True
             
             # Skip meta-text lines
