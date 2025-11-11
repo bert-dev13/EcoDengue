@@ -147,3 +147,4 @@ This project is developed for educational purposes.
 - Uses Together API for AI-powered recommendations
 - Inspired by the TOCSEA project design
 
+
