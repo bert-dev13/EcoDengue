@@ -18,8 +18,16 @@
 
 html {
     overflow-x: hidden;
+    overflow-y: auto;
     width: 100%;
-    max-width: 100%;
+    height: 100%;
+    /* Hide scrollbar but allow scrolling */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+html::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
 }
 
 :root {
@@ -73,9 +81,18 @@ body {
     -moz-osx-font-smoothing: grayscale;
     position: relative;
     overflow-x: hidden;
+    overflow-y: auto;
     width: 100%;
-    max-width: 100%;
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    /* Hide scrollbar but allow scrolling */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+body::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
 }
 
 /* Animated background overlay */
@@ -84,15 +101,15 @@ body::before {
     position: fixed;
     top: 0;
     left: 0;
+    right: 0;
+    bottom: 0;
     width: 100%;
     height: 100%;
-    max-width: 100%;
     background: radial-gradient(circle at 20% 50%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
                 radial-gradient(circle at 80% 80%, rgba(245, 158, 11, 0.08) 0%, transparent 50%);
     pointer-events: none;
     z-index: 0;
     animation: backgroundShift 20s ease-in-out infinite;
-    overflow: hidden;
 }
 
 @keyframes backgroundShift {
@@ -111,7 +128,6 @@ body::before {
     left: 0;
     right: 0;
     width: 100%;
-    max-width: 100%;
     background: var(--surface);
     border-bottom: 3px solid var(--primary);
     box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15);
@@ -180,8 +196,6 @@ body::before {
     bottom: 0;
     left: 0;
     right: 0;
-    width: 100%;
-    max-width: 100%;
     height: 3px;
     background: linear-gradient(90deg, 
         transparent 0%,
@@ -191,7 +205,6 @@ body::before {
         transparent 100%);
     animation: borderGlow 3s ease-in-out infinite;
     box-sizing: border-box;
-    overflow: hidden;
 }
 
 /* App Wrapper - Centers everything */
@@ -205,8 +218,6 @@ body::before {
     position: relative;
     z-index: 1;
     width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
     box-sizing: border-box;
 }
 
@@ -218,7 +229,6 @@ body::before {
     animation: containerFadeIn 0.8s ease-out;
     padding: 0 var(--space-sm);
     box-sizing: border-box;
-    overflow-x: hidden;
 }
 
 /* Header Styles */
@@ -239,10 +249,8 @@ body::before {
     animation: headerContainerSlideIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both,
                headerContainerPulse 4s ease-in-out 1.1s infinite;
     position: relative;
-    overflow: hidden;
     box-sizing: border-box;
     width: 100%;
-    max-width: 100%;
 }
 
 /* Top animated border line */
@@ -252,8 +260,6 @@ body::before {
     top: 0;
     left: 0;
     right: 0;
-    width: 100%;
-    max-width: 100%;
     height: 3px;
     background: linear-gradient(90deg, 
         transparent 0%,
@@ -264,7 +270,6 @@ body::before {
     animation: borderGlow 3s ease-in-out infinite;
     z-index: 3;
     box-sizing: border-box;
-    overflow: hidden;
 }
 
 /* Inner border accent */
@@ -430,8 +435,6 @@ body::before {
     flex-direction: column;
     gap: var(--space-lg);
     width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
     box-sizing: border-box;
 }
 
@@ -444,8 +447,6 @@ body::before {
     animation: slideUp 0.6s ease-out 0.4s both;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     width: 100%;
-    max-width: 100%;
-    overflow: hidden;
     box-sizing: border-box;
 }
 
@@ -682,9 +683,7 @@ body::before {
     border: 2px solid var(--border);
     border-top: 3px solid var(--secondary);
     position: relative;
-    overflow: hidden;
     width: 100%;
-    max-width: 100%;
     box-sizing: border-box;
 }
 
@@ -784,7 +783,7 @@ body::before {
     gap: var(--space-lg);
     margin-bottom: var(--space-xl);
     width: 100%;
-    max-width: 100%;
+    box-sizing: border-box;
 }
 
 
@@ -797,10 +796,9 @@ body::before {
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     animation: cardSlideIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
     position: relative;
-    overflow: hidden;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     width: 100%;
-    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .result-card::before {
@@ -808,10 +806,11 @@ body::before {
     position: absolute;
     top: 0;
     left: -100%;
-    width: 100%;
+    right: 0;
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
     transition: left 0.5s;
+    pointer-events: none;
 }
 
 .result-card:hover::before {
@@ -1213,10 +1212,9 @@ body::before {
     animation: slideUpScale 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
     animation-delay: 1.2s;
     position: relative;
-    overflow: hidden;
     width: 100%;
-    max-width: 100%;
     box-sizing: border-box;
+    overflow: hidden;
 }
 
 .recommendations-section::before {
@@ -1276,6 +1274,8 @@ body::before {
 .recommendations-content {
     position: relative;
     z-index: 2;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .recommendations-loading {
@@ -1313,15 +1313,28 @@ body::before {
     color: var(--text-primary);
     font-size: 1rem;
     width: 100%;
+    box-sizing: border-box;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 /* Recommendations Grid - Category Cards */
+.recommendations-text .recommendations-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+    margin-top: var(--space-md);
+    width: 100%;
+    box-sizing: border-box;
+}
+
 .recommendations-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--space-lg);
     margin-top: var(--space-md);
     width: 100%;
+    box-sizing: border-box;
 }
 
 .recommendation-category-card {
@@ -1334,6 +1347,9 @@ body::before {
     animation: cardSlideInFade 0.6s ease-out both;
     position: relative;
     overflow: hidden;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
 }
 
 .recommendation-category-card::before {
@@ -1377,6 +1393,8 @@ body::before {
     margin-bottom: var(--space-md);
     padding-bottom: var(--space-sm);
     border-bottom: 2px solid rgba(16, 185, 129, 0.1);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .category-icon {
@@ -1409,6 +1427,10 @@ body::before {
     -webkit-text-fill-color: transparent;
     background-clip: text;
     letter-spacing: 0.02em;
+    flex: 1;
+    min-width: 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .recommendation-list {
@@ -1417,7 +1439,9 @@ body::before {
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: var(--space-sm);
+    gap: var(--space-xs);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .recommendation-item {
@@ -1433,6 +1457,11 @@ body::before {
     transition: all 0.3s ease;
     animation: itemFadeIn 0.5s ease-out both;
     opacity: 0;
+    box-sizing: border-box;
+    width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    margin-bottom: var(--space-xs);
 }
 
 /* Items animate after card animation completes (0.6s card duration + small gap) */
@@ -1467,12 +1496,14 @@ body::before {
     font-size: 1rem;
     width: 1.5rem;
     height: 1.5rem;
+    min-width: 1.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
     background: rgba(16, 185, 129, 0.1);
     border-radius: 50%;
     transition: all 0.3s ease;
+    flex-shrink: 0;
 }
 
 .recommendation-item:hover {
@@ -1667,7 +1698,7 @@ body::before {
 @keyframes slideUpScale {
     from {
         opacity: 0;
-        transform: translateY(30px) scale(0.95);
+        transform: translateY(30px) scale(0.98);
     }
     to {
         opacity: 1;
@@ -1698,7 +1729,7 @@ body::before {
 @keyframes headerContainerSlideIn {
     from {
         opacity: 0;
-        transform: translateY(-40px) scale(0.9);
+        transform: translateY(-40px) scale(0.98);
     }
     to {
         opacity: 1;
@@ -1740,7 +1771,6 @@ body::before {
     .recommendations-section {
         padding: var(--space-md);
         width: 100%;
-        max-width: 100%;
     }
     
     .container {
@@ -1783,7 +1813,6 @@ body::before {
     .recommendations-section {
         padding: calc(var(--space-xl) * 1.2);
         width: 100%;
-        max-width: 100%;
     }
     
     .container {
@@ -1850,7 +1879,6 @@ body::before {
     .recommendations-section {
         padding: calc(var(--space-xl) * 1.5) 4rem;
         width: 100%;
-        max-width: 100%;
     }
     
     .container {
@@ -1917,8 +1945,7 @@ body::before {
         align-items: flex-start;
         padding-top: calc(90px + var(--space-lg));
         width: 100%;
-        max-width: 100%;
-        overflow-x: hidden;
+        box-sizing: border-box;
     }
     
     .header {
@@ -1938,7 +1965,6 @@ body::before {
     .recommendations-section {
         padding: var(--space-md);
         width: 100%;
-        max-width: 100%;
     }
     
     .container {
@@ -2046,6 +2072,24 @@ body::before {
         font-size: 0.875rem;
         padding: var(--space-xs) var(--space-sm);
         padding-left: calc(var(--space-sm) + 1.5rem);
+        line-height: 1.6;
+    }
+    
+    .recommendation-item::before {
+        left: var(--space-xs);
+        width: 1.25rem;
+        height: 1.25rem;
+        min-width: 1.25rem;
+        font-size: 0.875rem;
+    }
+    
+    .category-header {
+        flex-wrap: wrap;
+        gap: var(--space-xs);
+    }
+    
+    .category-icon {
+        font-size: 1.5rem;
     }
     
     .risk-badge {
