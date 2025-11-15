@@ -1,40 +1,16 @@
-<!-- ============================================================================
-     ECODENQUE – DENGUE OUTBREAK ANALYSIS SYSTEM
-     HTML Document - Main Application Interface
-     
-     This HTML file provides the user interface for the EcoDengue system,
-     including input forms, results display, and AI-powered recommendations.
-     
-     Author: EcoDengue Development Team
-     Version: 1.0.0
-     ============================================================================ -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- ============================================================================
-         META TAGS AND DOCUMENT INFORMATION
-         ============================================================================ -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EcoDengue – Dengue Outbreak Analysis System</title>
-    
-    <!-- ============================================================================
-         EXTERNAL FONTS (Google Fonts)
-         ============================================================================ -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- ============================================================================
-         STYLESHEETS
-         ============================================================================ -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- ============================================================================
-         TOP NAVIGATION BAR
-         ============================================================================ -->
+    <!-- Top Navigation Bar -->
     <nav class="top-navbar">
         <div class="top-navbar-container">
             <div class="school-logo-wrapper">
@@ -44,14 +20,9 @@
         </div>
     </nav>
 
-    <!-- ============================================================================
-         MAIN APPLICATION WRAPPER
-         ============================================================================ -->
     <div class="app-wrapper">
         <div class="container">
-            <!-- ====================================================================
-                 HEADER SECTION - Application Title and Description
-                 ==================================================================== -->
+            <!-- Header Section -->
             <header class="header">
                 <div class="header-container">
                     <div class="title-wrapper">
@@ -64,16 +35,11 @@
                 </div>
             </header>
 
-            <!-- ====================================================================
-                 MAIN CONTENT AREA
-                 ==================================================================== -->
+            <!-- Main Content -->
             <main class="main-content">
-                <!-- ================================================================
-                     INPUT SECTION - User Input Form for Prediction
-                     ================================================================ -->
+                <!-- Input Section -->
                 <section class="input-section">
                     <form id="predictionForm" class="prediction-form">
-                        <!-- Form Group 1: Waste Disposal Percentage -->
                         <div class="form-group">
                             <label for="wasteDisposal" class="form-label">
                                 <span class="label-primary">% of Houses with Proper Waste Disposal</span>
@@ -92,7 +58,6 @@
                             >
                         </div>
 
-                        <!-- Form Group 2: Stagnant Water Percentage -->
                         <div class="form-group">
                             <label for="stagnantWater" class="form-label">
                                 <span class="label-primary">% of Houses Free of Stagnant Water</span>
@@ -111,7 +76,6 @@
                             >
                         </div>
 
-                        <!-- Form Group 3: Drainage Score (1-5) -->
                         <div class="form-group">
                             <label for="drainageScore" class="form-label">
                                 <span class="label-primary">Drainage Score</span>
@@ -130,7 +94,6 @@
                             >
                         </div>
 
-                        <!-- Form Group 4: Temperature (°C) -->
                         <div class="form-group">
                             <label for="temperature" class="form-label">
                                 <span class="label-primary">Temperature (°C)</span>
@@ -148,7 +111,6 @@
                             >
                         </div>
 
-                        <!-- Form Group 5: Rainfall (Number of Rainy Days) -->
                         <div class="form-group">
                             <label for="rainfall" class="form-label">
                                 <span class="label-primary">Rainfall (Number of Rainy Days)</span>
@@ -166,7 +128,6 @@
                             >
                         </div>
 
-                        <!-- Form Group 6: Community Clean-Up Drive Frequency -->
                         <div class="form-group">
                             <label for="cleanupScore" class="form-label">
                                 <span class="label-primary">Community Clean-Up Drive (Frequency)</span>
@@ -184,16 +145,13 @@
                             >
                         </div>
 
-                        <!-- Submit Button -->
                         <button type="submit" class="predict-button" id="predictBtn">
                             <span>Compute Prediction</span>
                         </button>
                     </form>
                 </section>
 
-                <!-- ================================================================
-                     RESULTS SECTION - Prediction Results Display
-                     ================================================================ -->
+                <!-- Results Section -->
                 <section class="results-section" id="resultsSection" style="display: none;">
                     <div class="results-header">
                         <div class="results-header-icon">📊</div>
@@ -202,9 +160,7 @@
                         <div class="results-header-line"></div>
                     </div>
 
-                    <!-- Results Grid - Displays Prediction Cards -->
                     <div class="results-grid">
-                        <!-- Card 1: Predicted Dengue Cases -->
                         <div class="result-card highlight">
                             <div class="result-card-icon">🦠</div>
                             <div class="result-label">Predicted Number of Dengue Cases</div>
@@ -216,8 +172,7 @@
                             <div class="result-unit">cases</div>
                         </div>
                         
-                        <!-- Card 2: Risk Level Indicator -->
-                        <!-- Note: Always in DOM, visibility controlled by JavaScript -->
+                        <!-- Risk Indicator Card - Always in DOM, visibility controlled by JavaScript -->
                         <div class="result-card risk-card" id="riskIndicatorWrapper" style="display: none;">
                             <div class="result-card-icon" id="riskCardIcon">⚠️</div>
                             <div class="result-label">Risk Level</div>
@@ -234,9 +189,7 @@
                         </div>
                     </div>
                     
-                    <!-- ============================================================
-                         EXPORT BUTTONS - PDF Download and Clipboard Copy
-                         ============================================================ -->
+                    <!-- Export Buttons -->
                     <div class="export-buttons-wrapper" id="exportButtonsWrapper" style="display: none;">
                         <button type="button" class="export-button pdf-button" id="downloadPdfBtn">
                             <span class="export-icon">📄</span>
@@ -248,9 +201,7 @@
                         </button>
                     </div>
 
-                    <!-- ============================================================
-                         AI RECOMMENDATIONS SECTION - AI-Generated Advice
-                         ============================================================ -->
+                    <!-- AI Recommendations Section -->
                     <div class="recommendations-section" id="recommendationsSection" style="display: none;">
                         <div class="recommendations-header">
                             <div class="recommendations-icon">💡</div>
@@ -269,7 +220,6 @@
                         </div>
                     </div>
 
-                    <!-- Reset Button - Clear Results and Start New Prediction -->
                     <button type="button" class="reset-button" id="resetBtn">
                         <span class="reset-icon">🔄</span>
                         <span>Calculate New Prediction</span>
@@ -279,15 +229,8 @@
         </div>
     </div>
 
-    <!-- ============================================================================
-         EXTERNAL LIBRARIES
-         ============================================================================ -->
-    <!-- jsPDF Library for PDF Generation -->
+    <!-- Load jsPDF library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
-    <!-- ============================================================================
-         INLINE SCRIPTS - Library Initialization
-         ============================================================================ -->
     <script>
         // Verify jsPDF is loaded and log for debugging
         (function() {
@@ -311,10 +254,7 @@
             }
         })();
     </script>
-    
-    <!-- ============================================================================
-         MAIN APPLICATION SCRIPT
-         ============================================================================ -->
     <script src="script.js"></script>
 </body>
 </html>
+

@@ -1,9 +1,25 @@
-/* ============================================
-   EcoDengue – Dengue Outbreak Analysis System
-   Health-themed, Modern, Responsive Design
-   ============================================ */
+/* ============================================================================
+   ECODENQUE – DENGUE OUTBREAK ANALYSIS SYSTEM
+   Stylesheet - Health-themed, Modern, Responsive Design
+   
+   Table of Contents:
+   1. CSS Reset and Base Styles
+   2. CSS Variables (Custom Properties)
+   3. Layout Components (Navigation, Wrapper, Container)
+   4. Header Section Styles
+   5. Form and Input Styles
+   6. Results Display Styles
+   7. Recommendations Section Styles
+   8. Buttons and Interactive Elements
+   9. Animations and Transitions
+   10. Responsive Design (Media Queries)
+   11. Print Styles
+   ============================================================================ */
 
-/* Reset and Base Styles */
+/* ============================================================================
+   1. CSS RESET AND BASE STYLES
+   ============================================================================ */
+
 * {
     margin: 0;
     padding: 0;
@@ -21,7 +37,6 @@ html {
     overflow-y: auto;
     width: 100%;
     height: 100%;
-    /* Hide scrollbar but allow scrolling */
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE and Edge */
 }
@@ -29,6 +44,61 @@ html {
 html::-webkit-scrollbar {
     display: none; /* Chrome, Safari, Opera */
 }
+
+body {
+    font-family: var(--font-primary);
+    background-color: #f0fdf4;
+    background-image: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%);
+    background-attachment: fixed;
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: auto;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+body::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+/* Animated background overlay */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 20% 50%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(245, 158, 11, 0.08) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+    animation: backgroundShift 20s ease-in-out infinite;
+}
+
+@keyframes backgroundShift {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.9;
+    }
+}
+
+/* ============================================================================
+   2. CSS VARIABLES (CUSTOM PROPERTIES)
+   ============================================================================ */
 
 :root {
     /* Color Palette - Health & Dengue Theme */
@@ -69,57 +139,9 @@ html::-webkit-scrollbar {
     --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-body {
-    font-family: var(--font-primary);
-    background-color: #f0fdf4;
-    background-image: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%);
-    background-attachment: fixed;
-    color: var(--text-primary);
-    line-height: 1.6;
-    min-height: 100vh;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    position: relative;
-    overflow-x: hidden;
-    overflow-y: auto;
-    width: 100%;
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    /* Hide scrollbar but allow scrolling */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
-}
-
-body::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
-}
-
-/* Animated background overlay */
-body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle at 20% 50%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(245, 158, 11, 0.08) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 0;
-    animation: backgroundShift 20s ease-in-out infinite;
-}
-
-@keyframes backgroundShift {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.9;
-    }
-}
+/* ============================================================================
+   3. LAYOUT COMPONENTS (NAVIGATION, WRAPPER, CONTAINER)
+   ============================================================================ */
 
 /* Top Navigation Bar */
 .top-navbar {
@@ -136,15 +158,21 @@ body::before {
     box-sizing: border-box;
 }
 
-@keyframes navbarSlideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-100%);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.top-navbar::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, 
+        transparent 0%,
+        var(--primary) 20%,
+        var(--secondary) 50%,
+        var(--primary) 80%,
+        transparent 100%);
+    animation: borderGlow 3s ease-in-out infinite;
+    box-sizing: border-box;
 }
 
 .top-navbar-container {
@@ -189,24 +217,6 @@ body::before {
     text-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
 }
 
-/* Animated border line under navbar */
-.top-navbar::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, 
-        transparent 0%,
-        var(--primary) 20%,
-        var(--secondary) 50%,
-        var(--primary) 80%,
-        transparent 100%);
-    animation: borderGlow 3s ease-in-out infinite;
-    box-sizing: border-box;
-}
-
 /* App Wrapper - Centers everything */
 .app-wrapper {
     min-height: 100vh;
@@ -231,7 +241,19 @@ body::before {
     box-sizing: border-box;
 }
 
-/* Header Styles */
+/* Main Content Area */
+.main-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ============================================================================
+   4. HEADER SECTION STYLES
+   ============================================================================ */
+
 .header {
     text-align: center;
     margin-bottom: var(--space-xl);
@@ -253,7 +275,6 @@ body::before {
     width: 100%;
 }
 
-/* Top animated border line */
 .header-container::after {
     content: '';
     position: absolute;
@@ -272,7 +293,6 @@ body::before {
     box-sizing: border-box;
 }
 
-/* Inner border accent */
 .header-container::before {
     content: '';
     position: absolute;
@@ -284,15 +304,6 @@ body::before {
     border-radius: calc(var(--radius-lg) - 4px);
     pointer-events: none;
     z-index: 0;
-}
-
-@keyframes borderGlow {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.8;
-    }
 }
 
 .title-wrapper {
@@ -324,31 +335,12 @@ body::before {
     margin-left: var(--space-xs);
 }
 
-@keyframes mosquitoFly {
-    0%, 100% {
-        transform: translateY(0) rotate(0deg);
-        opacity: 1;
-    }
-    25% {
-        transform: translateY(-5px) rotate(-5deg);
-        opacity: 0.9;
-    }
-    50% {
-        transform: translateY(0) rotate(0deg);
-        opacity: 1;
-    }
-    75% {
-        transform: translateY(-5px) rotate(5deg);
-        opacity: 0.9;
-    }
-}
-
 .title {
     font-size: 1.75rem;
     font-weight: 700;
     font-family: var(--font-tech);
     color: var(--text-primary);
-    letter-spacing: 0.1em;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
     background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
     -webkit-background-clip: text;
@@ -357,7 +349,6 @@ body::before {
     animation: titleFadeIn 0.8s ease-out 0.5s both;
     position: relative;
     text-shadow: 0 0 30px rgba(16, 185, 129, 0.3);
-    letter-spacing: 0.15em;
 }
 
 .title-border-line {
@@ -398,28 +389,6 @@ body::before {
     animation: dotPulse 2s ease-in-out infinite 1s;
 }
 
-@keyframes lineExpand {
-    from {
-        width: 0;
-        opacity: 0;
-    }
-    to {
-        width: 100px;
-        opacity: 1;
-    }
-}
-
-@keyframes dotPulse {
-    0%, 100% {
-        transform: translateY(-50%) scale(1);
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-    }
-    50% {
-        transform: translateY(-50%) scale(1.2);
-        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0);
-    }
-}
-
 .subtitle {
     font-size: 0.875rem;
     color: var(--text-secondary);
@@ -429,16 +398,10 @@ body::before {
     z-index: 1;
 }
 
-/* Main Content */
-.main-content {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-lg);
-    width: 100%;
-    box-sizing: border-box;
-}
+/* ============================================================================
+   5. FORM AND INPUT STYLES
+   ============================================================================ */
 
-/* Input Section */
 .input-section {
     background: var(--surface);
     border-radius: var(--radius-lg);
@@ -486,40 +449,12 @@ body::before {
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
 }
 
-.form-group:nth-child(1) {
-    animation-delay: 0.5s;
-}
-
-.form-group:nth-child(2) {
-    animation-delay: 0.6s;
-}
-
-.form-group:nth-child(3) {
-    animation-delay: 0.7s;
-}
-
-.form-group:nth-child(4) {
-    animation-delay: 0.8s;
-}
-
-.form-group:nth-child(5) {
-    animation-delay: 0.9s;
-}
-
-.form-group:nth-child(6) {
-    animation-delay: 1.0s;
-}
-
-@keyframes formGroupFadeIn {
-    from {
-        opacity: 0;
-        transform: translateX(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
+.form-group:nth-child(1) { animation-delay: 0.5s; }
+.form-group:nth-child(2) { animation-delay: 0.6s; }
+.form-group:nth-child(3) { animation-delay: 0.7s; }
+.form-group:nth-child(4) { animation-delay: 0.8s; }
+.form-group:nth-child(5) { animation-delay: 0.9s; }
+.form-group:nth-child(6) { animation-delay: 1.0s; }
 
 .form-label {
     display: flex;
@@ -609,71 +544,10 @@ body::before {
     background: linear-gradient(to right, rgba(239, 68, 68, 0.02), var(--surface));
 }
 
-/* Buttons */
-.predict-button {
-    margin-top: var(--space-xs);
-    padding: 0.875rem 1.5rem;
-    font-size: 0.9375rem;
-    font-weight: 600;
-    color: var(--surface);
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
-    border: none;
-    border-radius: var(--radius);
-    cursor: pointer;
-    transition: var(--transition);
-    width: 100%;
-    letter-spacing: 0.01em;
-    animation: buttonFadeIn 0.5s ease-out 1.2s both;
-    position: relative;
-    overflow: hidden;
-    text-transform: uppercase;
-}
+/* ============================================================================
+   6. RESULTS DISPLAY STYLES
+   ============================================================================ */
 
-@keyframes buttonFadeIn {
-    from {
-        opacity: 0;
-        transform: scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-.predict-button::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
-    transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
-}
-
-.predict-button:active::before {
-    width: 300px;
-    height: 300px;
-}
-
-.predict-button:hover:not(:disabled) {
-    background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
-}
-
-.predict-button:active:not(:disabled) {
-    transform: translateY(0);
-}
-
-.predict-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-/* Results Section */
 .results-section {
     background: var(--surface);
     border-radius: var(--radius-lg);
@@ -719,20 +593,6 @@ body::before {
     filter: drop-shadow(0 4px 8px rgba(16, 185, 129, 0.2));
 }
 
-@keyframes iconBounce {
-    0% {
-        opacity: 0;
-        transform: scale(0) rotate(-180deg);
-    }
-    60% {
-        transform: scale(1.2) rotate(10deg);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1) rotate(0deg);
-    }
-}
-
 .results-title {
     font-size: 1.5rem;
     font-weight: 700;
@@ -742,17 +602,6 @@ body::before {
     letter-spacing: 0.1em;
     text-transform: uppercase;
     animation: titleSlideIn 0.6s ease-out 0.4s both;
-}
-
-@keyframes titleSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 .results-subtitle {
@@ -786,7 +635,6 @@ body::before {
     box-sizing: border-box;
 }
 
-
 .result-card {
     padding: calc(var(--space-xl) * 1.2);
     background: var(--surface);
@@ -817,13 +665,8 @@ body::before {
     left: 100%;
 }
 
-.result-card:nth-child(1) {
-    animation-delay: 0.7s;
-}
-
-.result-card:nth-child(2) {
-    animation-delay: 0.75s;
-}
+.result-card:nth-child(1) { animation-delay: 0.7s; }
+.result-card:nth-child(2) { animation-delay: 0.75s; }
 
 .result-card:hover {
     transform: translateY(-6px) scale(1.02);
@@ -842,15 +685,25 @@ body::before {
     box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
 }
 
-@keyframes cardSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(40px) scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+.result-card.risk-card {
+    text-align: center;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.03) 100%);
+    border-color: rgba(245, 158, 11, 0.3);
+    border-top: 3px solid var(--secondary);
+    position: relative;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.result-card.risk-card:hover {
+    border-color: var(--secondary);
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.3);
+}
+
+.result-card.risk-card[style*="display: flex"],
+.result-card.risk-card[style*="display: block"] {
+    opacity: 1;
+    visibility: visible;
 }
 
 .result-card-icon {
@@ -863,15 +716,6 @@ body::before {
 
 .result-card-icon.highlight-icon {
     animation: iconFloat 3s ease-in-out infinite 1.5s;
-}
-
-@keyframes iconFloat {
-    0%, 100% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-8px);
-    }
 }
 
 .result-label {
@@ -934,20 +778,6 @@ body::before {
     text-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
 }
 
-@keyframes valueCountUp {
-    0% {
-        opacity: 0;
-        transform: scale(0.3) translateY(20px);
-    }
-    60% {
-        transform: scale(1.1) translateY(-5px);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
-
 .result-value.highlight-value {
     color: var(--primary);
     font-size: 2.75rem;
@@ -965,17 +795,6 @@ body::before {
     line-height: 1.5;
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-5px);
-    }
-    to {
-        opacity: 0.7;
-        transform: translateY(0);
-    }
-}
-
 .result-unit {
     font-size: 0.875rem;
     color: var(--text-secondary);
@@ -986,33 +805,6 @@ body::before {
 }
 
 /* Risk Indicator */
-.result-card.risk-card {
-    text-align: center;
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.03) 100%);
-    border-color: rgba(245, 158, 11, 0.3);
-    border-top: 3px solid var(--secondary);
-    position: relative;
-}
-
-.result-card.risk-card:hover {
-    border-color: var(--secondary);
-    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.3);
-}
-
-/* Risk card styling - displayed simultaneously with predicted cases */
-/* When JavaScript shows the card (display: flex), ensure proper flex layout */
-.result-card.risk-card {
-    flex-direction: column;
-    justify-content: center;
-}
-
-/* When risk card is displayed, ensure it's fully visible */
-.result-card.risk-card[style*="display: flex"],
-.result-card.risk-card[style*="display: block"] {
-    opacity: 1;
-    visibility: visible;
-}
-
 .risk-indicator-wrapper {
     margin-top: var(--space-md);
     display: flex;
@@ -1117,112 +909,10 @@ body::before {
     border-top-color: var(--text-primary);
 }
 
-@keyframes riskBadgePopIn {
-    0% {
-        opacity: 0;
-        transform: scale(0.5) translateY(20px);
-    }
-    60% {
-        transform: scale(1.1) translateY(-5px);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
+/* ============================================================================
+   7. RECOMMENDATIONS SECTION STYLES
+   ============================================================================ */
 
-/* Export Buttons */
-.export-buttons-wrapper {
-    display: flex;
-    gap: var(--space-md);
-    margin-top: var(--space-xl);
-    margin-bottom: var(--space-lg);
-    justify-content: center;
-    flex-wrap: wrap;
-    animation: fadeInUp 0.6s ease-out 0.8s both;
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.export-button {
-    display: flex;
-    align-items: center;
-    gap: var(--space-xs);
-    padding: 0.875rem 1.75rem;
-    font-size: 0.9375rem;
-    font-weight: 600;
-    color: var(--surface);
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
-    border: none;
-    border-radius: var(--radius);
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
-}
-
-.export-button::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
-    transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
-}
-
-.export-button:active::before {
-    width: 300px;
-    height: 300px;
-}
-
-.export-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
-    background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 100%);
-}
-
-.export-button:active {
-    transform: translateY(0);
-}
-
-.export-button.clipboard-button {
-    background: linear-gradient(135deg, var(--secondary) 0%, #d97706 100%);
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
-}
-
-.export-button.clipboard-button:hover {
-    background: linear-gradient(135deg, #d97706 0%, var(--secondary) 100%);
-    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3);
-}
-
-.export-icon {
-    font-size: 1.125rem;
-    line-height: 1;
-    display: inline-block;
-    transition: transform 0.3s ease;
-}
-
-.export-button:hover .export-icon {
-    transform: scale(1.1) rotate(5deg);
-}
-
-/* Recommendations Section */
 .recommendations-section {
     margin-top: var(--space-xl);
     margin-bottom: var(--space-xl);
@@ -1341,12 +1031,6 @@ body::before {
     animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
 .recommendations-loading p {
     color: var(--text-secondary);
     font-size: 0.9375rem;
@@ -1363,7 +1047,6 @@ body::before {
     overflow-wrap: break-word;
 }
 
-/* Recommendations Grid - Category Cards */
 .recommendations-text .recommendations-grid {
     display: grid;
     grid-template-columns: 1fr;
@@ -1420,17 +1103,6 @@ body::before {
     border-color: var(--primary);
 }
 
-@keyframes cardSlideInFade {
-    from {
-        opacity: 0;
-        transform: translateY(30px) scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
 .category-header {
     display: flex;
     align-items: center;
@@ -1446,20 +1118,6 @@ body::before {
     font-size: 2rem;
     animation: iconBounceIn 0.6s ease-out both;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-}
-
-@keyframes iconBounceIn {
-    0% {
-        opacity: 0;
-        transform: scale(0) rotate(-180deg);
-    }
-    60% {
-        transform: scale(1.2) rotate(10deg);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1) rotate(0deg);
-    }
 }
 
 .category-title {
@@ -1509,7 +1167,6 @@ body::before {
     margin-bottom: var(--space-xs);
 }
 
-/* Items animate after card animation completes (0.6s card duration + small gap) */
 .recommendation-category-card .recommendation-item:nth-child(1) { animation-delay: 0.65s; }
 .recommendation-category-card .recommendation-item:nth-child(2) { animation-delay: 0.7s; }
 .recommendation-category-card .recommendation-item:nth-child(3) { animation-delay: 0.75s; }
@@ -1519,17 +1176,6 @@ body::before {
 .recommendation-category-card .recommendation-item:nth-child(7) { animation-delay: 0.95s; }
 .recommendation-category-card .recommendation-item:nth-child(8) { animation-delay: 1.0s; }
 .recommendation-category-card .recommendation-item:nth-child(n+9) { animation-delay: 1.05s; }
-
-@keyframes itemFadeIn {
-    from {
-        opacity: 0;
-        transform: translateX(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
 
 .recommendation-item::before {
     content: '✓';
@@ -1665,6 +1311,62 @@ body::before {
     margin-top: var(--space-sm);
 }
 
+/* ============================================================================
+   8. BUTTONS AND INTERACTIVE ELEMENTS
+   ============================================================================ */
+
+.predict-button {
+    margin-top: var(--space-xs);
+    padding: 0.875rem 1.5rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--surface);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: var(--transition);
+    width: 100%;
+    letter-spacing: 0.01em;
+    animation: buttonFadeIn 0.5s ease-out 1.2s both;
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+}
+
+.predict-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.predict-button:active::before {
+    width: 300px;
+    height: 300px;
+}
+
+.predict-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
+}
+
+.predict-button:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.predict-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 .reset-button {
     width: 100%;
     padding: 1rem 1.5rem;
@@ -1708,7 +1410,151 @@ body::before {
     transform: translateY(0);
 }
 
-/* Animations */
+/* Export Buttons */
+.export-buttons-wrapper {
+    display: flex;
+    gap: var(--space-md);
+    margin-top: var(--space-xl);
+    margin-bottom: var(--space-lg);
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeInUp 0.6s ease-out 0.8s both;
+}
+
+.export-button {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: 0.875rem 1.75rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--surface);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.export-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.export-button:active::before {
+    width: 300px;
+    height: 300px;
+}
+
+.export-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
+    background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 100%);
+}
+
+.export-button:active {
+    transform: translateY(0);
+}
+
+.export-button.clipboard-button {
+    background: linear-gradient(135deg, var(--secondary) 0%, #d97706 100%);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+}
+
+.export-button.clipboard-button:hover {
+    background: linear-gradient(135deg, #d97706 0%, var(--secondary) 100%);
+    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3);
+}
+
+.export-icon {
+    font-size: 1.125rem;
+    line-height: 1;
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.export-button:hover .export-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* ============================================================================
+   9. ANIMATIONS AND TRANSITIONS
+   ============================================================================ */
+
+@keyframes navbarSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes borderGlow {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.8;
+    }
+}
+
+@keyframes mosquitoFly {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+    }
+    25% {
+        transform: translateY(-5px) rotate(-5deg);
+        opacity: 0.9;
+    }
+    50% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+    }
+    75% {
+        transform: translateY(-5px) rotate(5deg);
+        opacity: 0.9;
+    }
+}
+
+@keyframes lineExpand {
+    from {
+        width: 0;
+        opacity: 0;
+    }
+    to {
+        width: 100px;
+        opacity: 1;
+    }
+}
+
+@keyframes dotPulse {
+    0%, 100% {
+        transform: translateY(-50%) scale(1);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+    50% {
+        transform: translateY(-50%) scale(1.2);
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0);
+    }
+}
+
 @keyframes containerFadeIn {
     from {
         opacity: 0;
@@ -1791,210 +1637,168 @@ body::before {
     }
 }
 
-/* Responsive Design */
-
-/* Medium screens (between mobile and tablet) */
-@media (min-width: 481px) and (max-width: 767px) {
-    .top-navbar-container {
-        padding: var(--space-md) var(--space-md);
+@keyframes formGroupFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
     }
-    
-    .school-logo {
-        height: 60px;
-    }
-    
-    .school-name {
-        font-size: 1.25rem;
-    }
-    
-    .app-wrapper {
-        padding-top: calc(100px + var(--space-md));
-    }
-    
-    .input-section,
-    .results-section,
-    .recommendations-section {
-        padding: var(--space-md);
-        width: 100%;
-    }
-    
-    .container {
-        padding: 0 var(--space-sm);
-    }
-    
-    .recommendations-title {
-        font-size: 1.2rem;
-        letter-spacing: 0.08em;
-    }
-    
-    .recommendations-subtitle {
-        font-size: 0.8125rem;
+    to {
+        opacity: 1;
+        transform: translateX(0);
     }
 }
 
-/* Tablet */
-@media (min-width: 768px) {
-    .top-navbar-container {
-        padding: var(--space-md) var(--space-xl);
+@keyframes buttonFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
     }
-    
-    .school-logo {
-        height: 65px;
-    }
-    
-    .school-name {
-        font-size: 1.4rem;
-    }
-    
-    .app-wrapper {
-        padding-top: calc(105px + var(--space-md));
-    }
-    
-    .container {
-        max-width: 900px;
-    }
-    
-    .title {
-        font-size: 2rem;
-    }
-    
-    .subtitle {
-        font-size: 0.9375rem;
-    }
-    
-    .input-section,
-    .results-section,
-    .recommendations-section {
-        padding: calc(var(--space-xl) * 1.2);
-        width: 100%;
-    }
-    
-    .container {
-        padding: 0 var(--space-md);
-    }
-    
-    .results-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--space-lg);
-    }
-    
-    /* Make both cards equally prominent and displayed side by side */
-    .result-card.highlight,
-    .result-card.risk-card {
-        min-height: 280px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
-    
-    .result-value {
-        font-size: 2.25rem;
-    }
-    
-    .result-value.highlight-value {
-        font-size: 2.5rem;
-    }
-    
-    .recommendations-header {
-        padding: 0;
-    }
-    
-    .recommendations-title {
-        font-size: 1.35rem;
-        letter-spacing: 0.1em;
-    }
-    
-    .recommendations-subtitle {
-        font-size: 0.875rem;
-    }
-    
-    .recommendations-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--space-lg);
-    }
-    
-    .recommendation-category-card {
-        padding: var(--space-lg);
-    }
-    
-    .category-title {
-        font-size: 1.15rem;
+    to {
+        opacity: 1;
+        transform: scale(1);
     }
 }
 
-/* Desktop */
-@media (min-width: 1024px) {
-    .container {
-        max-width: 1000px;
+@keyframes iconBounce {
+    0% {
+        opacity: 0;
+        transform: scale(0) rotate(-180deg);
     }
-    
-    .school-logo {
-        height: 70px;
+    60% {
+        transform: scale(1.2) rotate(10deg);
     }
-    
-    .school-name {
-        font-size: 1.5rem;
-    }
-    
-    .app-wrapper {
-        padding: var(--space-xl);
-        padding-top: calc(110px + var(--space-xl));
-    }
-    
-    .input-section,
-    .results-section,
-    .recommendations-section {
-        padding: calc(var(--space-xl) * 1.5) 4rem;
-        width: 100%;
-    }
-    
-    .container {
-        padding: 0 var(--space-lg);
-    }
-    
-    .results-grid {
-        gap: var(--space-xl);
-    }
-    
-    .recommendations-header {
-        padding: 0;
-    }
-    
-    .recommendations-title {
-        font-size: 1.5rem;
-        letter-spacing: 0.1em;
-    }
-    
-    .recommendations-subtitle {
-        font-size: 0.875rem;
-    }
-    
-    .recommendations-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--space-xl);
-    }
-    
-    .recommendation-category-card {
-        padding: var(--space-xl);
-    }
-    
-    .category-title {
-        font-size: 1.3rem;
-    }
-    
-    .recommendation-item {
-        font-size: 1rem;
-        padding: var(--space-md) var(--space-lg);
-        padding-left: calc(var(--space-lg) + 1.5rem);
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
     }
 }
 
-/* Large Desktop */
-@media (min-width: 1440px) {
-    .container {
-        max-width: 1100px;
+@keyframes titleSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
+
+@keyframes cardSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes iconFloat {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+@keyframes valueCountUp {
+    0% {
+        opacity: 0;
+        transform: scale(0.3) translateY(20px);
+    }
+    60% {
+        transform: scale(1.1) translateY(-5px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 0.7;
+        transform: translateY(0);
+    }
+}
+
+@keyframes riskBadgePopIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.5) translateY(20px);
+    }
+    60% {
+        transform: scale(1.1) translateY(-5px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes cardSlideInFade {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes iconBounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0) rotate(-180deg);
+    }
+    60% {
+        transform: scale(1.2) rotate(10deg);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+@keyframes itemFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ============================================================================
+   10. RESPONSIVE DESIGN (MEDIA QUERIES)
+   ============================================================================ */
 
 /* Mobile Optimizations */
 @media (max-width: 480px) {
@@ -2081,7 +1885,6 @@ body::before {
         padding: var(--space-md);
     }
     
-    /* Ensure both cards are visible on mobile */
     .result-card.highlight,
     .result-card.risk-card {
         display: flex !important;
@@ -2206,13 +2009,212 @@ body::before {
     }
 }
 
+/* Medium screens (between mobile and tablet) */
+@media (min-width: 481px) and (max-width: 767px) {
+    .top-navbar-container {
+        padding: var(--space-md) var(--space-md);
+    }
+    
+    .school-logo {
+        height: 60px;
+    }
+    
+    .school-name {
+        font-size: 1.25rem;
+    }
+    
+    .app-wrapper {
+        padding-top: calc(100px + var(--space-md));
+    }
+    
+    .input-section,
+    .results-section,
+    .recommendations-section {
+        padding: var(--space-md);
+        width: 100%;
+    }
+    
+    .container {
+        padding: 0 var(--space-sm);
+    }
+    
+    .recommendations-title {
+        font-size: 1.2rem;
+        letter-spacing: 0.08em;
+    }
+    
+    .recommendations-subtitle {
+        font-size: 0.8125rem;
+    }
+}
+
+/* Tablet */
+@media (min-width: 768px) {
+    .top-navbar-container {
+        padding: var(--space-md) var(--space-xl);
+    }
+    
+    .school-logo {
+        height: 65px;
+    }
+    
+    .school-name {
+        font-size: 1.4rem;
+    }
+    
+    .app-wrapper {
+        padding-top: calc(105px + var(--space-md));
+    }
+    
+    .container {
+        max-width: 900px;
+        padding: 0 var(--space-md);
+    }
+    
+    .title {
+        font-size: 2rem;
+    }
+    
+    .subtitle {
+        font-size: 0.9375rem;
+    }
+    
+    .input-section,
+    .results-section,
+    .recommendations-section {
+        padding: calc(var(--space-xl) * 1.2);
+        width: 100%;
+    }
+    
+    .results-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-lg);
+    }
+    
+    .result-card.highlight,
+    .result-card.risk-card {
+        min-height: 280px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    .result-value {
+        font-size: 2.25rem;
+    }
+    
+    .result-value.highlight-value {
+        font-size: 2.5rem;
+    }
+    
+    .recommendations-header {
+        padding: 0;
+    }
+    
+    .recommendations-title {
+        font-size: 1.35rem;
+        letter-spacing: 0.1em;
+    }
+    
+    .recommendations-subtitle {
+        font-size: 0.875rem;
+    }
+    
+    .recommendations-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-lg);
+    }
+    
+    .recommendation-category-card {
+        padding: var(--space-lg);
+    }
+    
+    .category-title {
+        font-size: 1.15rem;
+    }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+    .container {
+        max-width: 1000px;
+        padding: 0 var(--space-lg);
+    }
+    
+    .school-logo {
+        height: 70px;
+    }
+    
+    .school-name {
+        font-size: 1.5rem;
+    }
+    
+    .app-wrapper {
+        padding: var(--space-xl);
+        padding-top: calc(110px + var(--space-xl));
+    }
+    
+    .input-section,
+    .results-section,
+    .recommendations-section {
+        padding: calc(var(--space-xl) * 1.5) 4rem;
+        width: 100%;
+    }
+    
+    .results-grid {
+        gap: var(--space-xl);
+    }
+    
+    .recommendations-header {
+        padding: 0;
+    }
+    
+    .recommendations-title {
+        font-size: 1.5rem;
+        letter-spacing: 0.1em;
+    }
+    
+    .recommendations-subtitle {
+        font-size: 0.875rem;
+    }
+    
+    .recommendations-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-xl);
+    }
+    
+    .recommendation-category-card {
+        padding: var(--space-xl);
+    }
+    
+    .category-title {
+        font-size: 1.3rem;
+    }
+    
+    .recommendation-item {
+        font-size: 1rem;
+        padding: var(--space-md) var(--space-lg);
+        padding-left: calc(var(--space-lg) + 1.5rem);
+    }
+}
+
+/* Large Desktop */
+@media (min-width: 1440px) {
+    .container {
+        max-width: 1100px;
+    }
+}
+
 /* Focus visible for accessibility */
 *:focus-visible {
     outline: 2px solid var(--primary);
     outline-offset: 2px;
 }
 
-/* Print Styles */
+/* ============================================================================
+   11. PRINT STYLES
+   ============================================================================ */
+
 @media print {
     .app-wrapper {
         align-items: flex-start;
@@ -2239,5 +2241,3 @@ body::before {
         border: 1px solid var(--border);
     }
 }
-
-

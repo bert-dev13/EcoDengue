@@ -1,49 +1,10 @@
-/**
- * EcoDengue – Dengue Outbreak Analysis System
- * Main JavaScript file for prediction calculations and UI interactions
- */
-
-// ============================================
-// Constants and Configuration
-// ============================================
-
-// Formula coefficients for dengue case prediction
-// Formula: No. of Dengue Cases = 260.819 - 2.057(W) - 0.194(F) - 1.318(D) - 0.609(T) - 0.222(R) - 0.274(U)
-const FORMULA_CONSTANT = 260.819;
-const WASTE_DISPOSAL_COEFFICIENT = -2.057;
-const STAGNANT_WATER_COEFFICIENT = -0.194;
-const DRAINAGE_COEFFICIENT = -1.318;
-const TEMPERATURE_COEFFICIENT = -0.609;
-const RAINFALL_COEFFICIENT = -0.222;
-const CLEANUP_COEFFICIENT = -0.274;
-
-// DOM Elements
-const form = document.getElementById('predictionForm');
-const predictBtn = document.getElementById('predictBtn');
-const resetBtn = document.getElementById('resetBtn');
-const resultsSection = document.getElementById('resultsSection');
-const dengueCasesValue = document.getElementById('dengueCasesValue');
-const dengueCasesValueOriginal = document.getElementById('dengueCasesValueOriginal');
-const recommendationsSection = document.getElementById('recommendationsSection');
-const recommendationsLoading = document.getElementById('recommendationsLoading');
-const recommendationsText = document.getElementById('recommendationsText');
-const riskIndicatorWrapper = document.getElementById('riskIndicatorWrapper');
-const riskBadge = document.getElementById('riskBadge');
-const riskLabel = document.getElementById('riskLabel');
-const riskIcon = document.getElementById('riskIcon');
-const riskTooltip = document.getElementById('riskTooltip');
-const riskTooltipText = document.getElementById('riskTooltipText');
-const exportButtonsWrapper = document.getElementById('exportButtonsWrapper');
-const downloadPdfBtn = document.getElementById('downloadPdfBtn');
-const copyClipboardBtn = document.getElementById('copyClipboardBtn');
-
-// API Configuration
-const API_BASE_URL = '/api';
-
-// ============================================
-// Utility Functions
-// ============================================
-
+  /**
+ * ============================================================================
+ * ECODENQUE – DENGUE OUTBREAK ANALYSIS SYSTEM
+ * Main JavaScript File - Prediction Calculations and UI Interactions
+ * ============================================================================
+ * 
+ 
 /**
  * Formats a number with decimal places
  * @param {number} num - The number to format
@@ -87,9 +48,59 @@ function isValidDrainageScore(value) {
     return !isNaN(num) && num >= 1 && num <= 5 && isFinite(num);
 }
 
-// ============================================
-// Core Calculation Functions
-// ============================================
+// ============================================================================
+// 3. CONSTANTS AND CONFIGURATION
+// ============================================================================
+
+// Formula constants for dengue case prediction
+const FORMULA_CONSTANT = 260.819;
+const WASTE_DISPOSAL_COEFFICIENT = -2.057;
+const STAGNANT_WATER_COEFFICIENT = -0.194;
+const DRAINAGE_COEFFICIENT = -1.318;
+const TEMPERATURE_COEFFICIENT = -0.609;
+const RAINFALL_COEFFICIENT = -0.222;
+const CLEANUP_COEFFICIENT = -0.274;
+
+// API base URL for backend requests
+const API_BASE_URL = 'http://127.0.0.1:5000/api';
+
+// ============================================================================
+// 4. DOM ELEMENT REFERENCES
+// ============================================================================
+
+// Wait for DOM to load before getting elements
+let form, predictBtn, resetBtn, downloadPdfBtn, copyClipboardBtn;
+let resultsSection, riskIndicatorWrapper, riskBadge, riskLabel, riskIcon, riskTooltipText;
+let exportButtonsWrapper, recommendationsSection, recommendationsLoading, recommendationsText;
+let dengueCasesValue, dengueCasesValueOriginal;
+
+// Initialize DOM elements when page loads
+function initializeDOMElements() {
+    form = document.getElementById('predictionForm');
+    predictBtn = document.getElementById('predictBtn');
+    resetBtn = document.getElementById('resetBtn');
+    downloadPdfBtn = document.getElementById('downloadPdfBtn');
+    copyClipboardBtn = document.getElementById('copyClipboardBtn');
+    
+    resultsSection = document.getElementById('resultsSection');
+    riskIndicatorWrapper = document.getElementById('riskIndicatorWrapper');
+    riskBadge = document.getElementById('riskBadge');
+    riskLabel = document.getElementById('riskLabel');
+    riskIcon = document.getElementById('riskIcon');
+    riskTooltipText = document.getElementById('riskTooltipText');
+    
+    exportButtonsWrapper = document.getElementById('exportButtonsWrapper');
+    recommendationsSection = document.getElementById('recommendationsSection');
+    recommendationsLoading = document.getElementById('recommendationsLoading');
+    recommendationsText = document.getElementById('recommendationsText');
+    
+    dengueCasesValue = document.getElementById('dengueCasesValue');
+    dengueCasesValueOriginal = document.getElementById('dengueCasesValueOriginal');
+}
+
+// ============================================================================
+// 5. CORE CALCULATION FUNCTIONS
+// ============================================================================
 
 /**
  * Calculates predicted number of dengue cases using the formula:
@@ -125,9 +136,9 @@ function calculateDengueCases(wasteDisposal, stagnantWater, drainageScore, tempe
     return Math.max(0, dengueCases);
 }
 
-// ============================================
-// UI Update Functions
-// ============================================
+// ============================================================================
+// 6. UI UPDATE FUNCTIONS
+// ============================================================================
 
 /**
  * Determines risk level based on predicted dengue cases
@@ -234,6 +245,10 @@ function displayResults(dengueCases) {
         });
     }, 100);
 }
+
+// ============================================================================
+// 7. API COMMUNICATION FUNCTIONS
+// ============================================================================
 
 /**
  * Fetches AI recommendations from the backend API
@@ -507,6 +522,22 @@ function formatRecommendations(recommendations) {
     
     // Filter out meta-commentary first
     const filteredRecommendations = filterMetaText(recommendations);
+    
+    // ========================================================================
+    // HELPER FUNCTION: Normalize text for comparison
+    // ========================================================================
+    /**
+     * Normalizes text for comparison (removes HTML tags, extra whitespace, lowercase)
+     * @param {string} text - Text to normalize
+     * @returns {string} Normalized text
+     */
+    function normalizeText(text) {
+        if (!text || typeof text !== 'string') return '';
+        // Remove HTML tags
+        const plainText = text.replace(/<[^>]+>/g, ' ').trim();
+        // Normalize whitespace and convert to lowercase
+        return plainText.replace(/\s+/g, ' ').toLowerCase();
+    }
     
     // Category mapping with icons and keywords for auto-categorization
     const categoryMap = {
@@ -863,8 +894,16 @@ function formatRecommendations(recommendations) {
             // Remove markdown italic
             content = content.replace(/\*([^*]+)\*/g, '<em>$1</em>');
             if (content && content.length > 3) {
-                // Add to current category's items array
-                currentItems.push(content);
+                // Check for duplicates before adding (normalize and compare)
+                const normalizedContent = normalizeText(content);
+                const isDuplicateInCurrent = currentItems.some(item => {
+                    return normalizeText(item) === normalizedContent;
+                });
+                
+                // Only add if not a duplicate
+                if (!isDuplicateInCurrent) {
+                    currentItems.push(content);
+                }
             }
         } else if (trimmed.length > 15) {
             // Regular paragraph or sentence - might be a recommendation
@@ -985,7 +1024,17 @@ function formatRecommendations(recommendations) {
                 // Remove markdown formatting
                 let content = trimmed.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
                 content = content.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-                currentItems.push(content);
+                
+                // Check for duplicates before adding
+                const normalizedContent = normalizeText(content);
+                const isDuplicateInCurrent = currentItems.some(item => {
+                    return normalizeText(item) === normalizedContent;
+                });
+                
+                // Only add if not a duplicate
+                if (!isDuplicateInCurrent) {
+                    currentItems.push(content);
+                }
             }
         }
     });
@@ -1118,6 +1167,37 @@ function formatRecommendations(recommendations) {
         };
     }
     
+    // ========================================================================
+    // DEDUPLICATION: Remove duplicate recommendations
+    // ========================================================================
+    // Remove duplicates within each category
+    Object.keys(categories).forEach(categoryKey => {
+        if (!categories[categoryKey] || !Array.isArray(categories[categoryKey])) {
+            return;
+        }
+        
+        const seen = new Set();
+        const uniqueItems = [];
+        
+        categories[categoryKey].forEach(item => {
+            if (!item || typeof item !== 'string') return;
+            
+            const normalized = normalizeText(item);
+            
+            // Skip empty items
+            if (!normalized || normalized.length < 10) return;
+            
+            // Skip if we've seen this exact text before
+            if (!seen.has(normalized)) {
+                seen.add(normalized);
+                uniqueItems.push(item);
+            }
+        });
+        
+        // Update category with deduplicated items
+        categories[categoryKey] = uniqueItems;
+    });
+    
     // Generate HTML for category cards
     if (Object.keys(categories).length === 0) {
         return '<div class="recommendation-card"><p>No recommendations available.</p></div>';
@@ -1200,10 +1280,22 @@ function formatRecommendations(recommendations) {
                     <h3 class="category-title">${categoryTitle}</h3>
                 </div>
                 <ul class="recommendation-list">
-                    ${validItems.map(item => {
+                    ${validItems.map((item, index) => {
                         // Items may contain HTML formatting from markdown conversion, so we validate but don't escape
                         const safeItem = String(item || '').trim();
-                        return safeItem ? `<li class="recommendation-item">${safeItem}</li>` : '';
+                        if (!safeItem) return '';
+                        
+                        // Additional deduplication check at render time
+                        const normalized = normalizeText(safeItem);
+                        // Check if this exact normalized text appears earlier in the list
+                        const isDuplicate = validItems.slice(0, index).some(prevItem => {
+                            return normalizeText(prevItem) === normalized;
+                        });
+                        
+                        // Skip duplicates at render time
+                        if (isDuplicate) return '';
+                        
+                        return `<li class="recommendation-item">${safeItem}</li>`;
                     }).filter(li => li.length > 0).join('')}
                 </ul>
             </div>
@@ -1283,6 +1375,10 @@ function getJsPDFLibrary() {
     
     return null;
 }
+
+// ============================================================================
+// 8. EXPORT FUNCTIONS (PDF, CLIPBOARD)
+// ============================================================================
 
 /**
  * Downloads results as PDF
@@ -1693,9 +1789,9 @@ function resetResults() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ============================================
-// Input Validation and Handling
-// ============================================
+// ============================================================================
+// 9. INPUT VALIDATION AND HANDLING
+// ============================================================================
 
 /**
  * Validates all form inputs
@@ -1761,9 +1857,9 @@ function handleInputValidation(event) {
     }
 }
 
-// ============================================
-// Event Handlers
-// ============================================
+// ============================================================================
+// 10. EVENT HANDLERS
+// ============================================================================
 
 /**
  * Handles form submission and triggers prediction
@@ -1815,9 +1911,9 @@ function handleFormSubmit(event) {
     predictBtn.querySelector('span').textContent = 'Compute Prediction';
 }
 
-// ============================================
-// Event Listeners Setup
-// ============================================
+// ============================================================================
+// 11. EVENT LISTENERS SETUP
+// ============================================================================
 
 /**
  * Initializes all event listeners
@@ -1880,9 +1976,9 @@ function initializeEventListeners() {
     });
 }
 
-// ============================================
-// Initialization
-// ============================================
+// ============================================================================
+// 11. APPLICATION INITIALIZATION
+// ============================================================================
 
 /**
  * Initializes the application when DOM is loaded
@@ -1890,8 +1986,12 @@ function initializeEventListeners() {
 function init() {
     // Wait for DOM to be fully loaded
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initializeEventListeners);
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDOMElements();
+            initializeEventListeners();
+        });
     } else {
+        initializeDOMElements();
         initializeEventListeners();
     }
 }
@@ -1899,9 +1999,9 @@ function init() {
 // Start the application
 init();
 
-// ============================================
-// Export functions for testing (if needed)
-// ============================================
+// ============================================================================
+// EXPORT FUNCTIONS FOR TESTING (if needed)
+// ============================================================================
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         calculateDengueCases,
@@ -1910,5 +2010,8 @@ if (typeof module !== 'undefined' && module.exports) {
         isValidPercentage
     };
 }
+
+
+
 
 
