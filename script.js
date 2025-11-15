@@ -62,7 +62,10 @@ const RAINFALL_COEFFICIENT = -0.222;
 const CLEANUP_COEFFICIENT = -0.274;
 
 // API base URL for backend requests
-const API_BASE_URL = 'http://127.0.0.1:5000/api';
+// Use relative path for production, fallback to localhost for development
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+    ? 'http://127.0.0.1:5000/api' 
+    : '/api';
 
 // ============================================================================
 // 4. DOM ELEMENT REFERENCES
